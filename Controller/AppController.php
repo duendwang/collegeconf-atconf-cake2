@@ -51,27 +51,18 @@ class AppController extends Controller {
     
     public function beforeRender() {
         if($this->Auth->loggedIn()) {
-            $this->viewClass = 'Theme'; //Activates use of themes
-            $themes = array(1 => 'Overseer',2 => 'Registration',3 => 'Registration',4 => 'LRC',5 => 'Cashier');
-            $this->theme = $themes[$this->Auth->user('UserType.account_type_id')];
-            if($this->Auth->user('UserType.account_type_id') == 4) {
-                App::import('Controller','Attendees');
-                $Attendees = new AttendeesController;
-                $Attendees->constructClasses();
-                if($Attendees->_requirementCheck() && $this->request['controller'] == 'pages' && $this->request['pass'][0] == 'home') $this->_flash(__('Multiple errors found for saved attendees. Please correct ASAP. Incomplete registrations may be denied or late fees assessed.',true),'error');
-            }
+            debug($this->request);
+            debug($_SERVER);
+            exit;
             $this->loadModel('Conference');
-            $conferences = $this->Conference->find('list');
-            $selected_conference = $this->Session->read('Conference.selected');
             $link = 'http://wiki.college-conference.com/'.strtolower($this->theme).'/index.php?title='.ucwords($this->request->params['controller']).':'.ucwords($this->request->params['action']);
             $user = $this->Auth->user();
-            $this->set(compact('user','link','conferences','selected_conference'));
+            $this->set(compact('user','link','selected_conference'));
         }
     }
     
     public $components = array(
         'DebugKit.Toolbar',
-        'Acl',
         'Session',
         'Auth' => array(
             'loginRedirect' => array('controller' => 'pages', 'action' => 'display', 'home'),
@@ -86,6 +77,4 @@ class AppController extends Controller {
         }
         return false;
     }**/
-//TODO consider using routing prefixes instead of themes for different roles
-
 }

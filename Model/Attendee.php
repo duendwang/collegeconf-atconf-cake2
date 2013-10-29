@@ -45,6 +45,37 @@ class Attendee extends AppModel {
             )
         );
 
+        public $actsAs = array('Search.Searchable','Containable');
+
+        public $filterArgs = array(
+                array('name' => 'name', 'type' => 'query', 'method' => 'filterName'),
+                array('name' => 'locality', 'type' => 'query', 'field' => 'Locality.city', 'method' => 'filterLocality')
+        );
+        
+        public function filterName($data, $field = null){
+            if(empty($data['name'])){
+                return array();
+            }
+            $name = '%' . $data['name'] . '%';
+            return array (
+                'OR' => array (
+                    $this->alias . '.first_name LIKE' => $name,
+                    $this->alias . '.last_name LIKE' => $name,
+					'CONCAT('.$this->alias.'.first_name,\' \','.$this->alias.'.last_name) LIKE' => $name
+                )
+            );
+        }
+        
+        public function filterLocality($data, $field = null){
+            if(empty($data['locality'])){
+                return array();
+            }
+            $locality = '%' . $data['locality'] . '%';
+            return array (
+                    'Locality.city LIKE' => $locality
+            );
+        }
+
 /**
  * construct method
  * 

@@ -13,11 +13,13 @@
 		<td>
 			<?php echo $this->Html->link($checkIn['Attendee']['id'], array('controller' => 'attendees', 'action' => 'view', $checkIn['Attendee']['id'])); ?>
 		</td>
+                <td><?php echo h($checkIn['Attendee']['first_name']); ?>&nbsp;</td>
+                <td><?php echo h($checkIn['Attendee']['last_name']); ?>&nbsp;</td>
 		<td><?php echo h($checkIn['CheckIn']['timestamp']); ?>&nbsp;</td>
 		<td class="actions">
-			<?php echo $this->Html->link(__('View'), array('action' => 'view', $checkIn['CheckIn']['id'])); ?>
+			<?php //echo $this->Html->link(__('View'), array('action' => 'view', $checkIn['CheckIn']['id'])); ?>
 			<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $checkIn['CheckIn']['id'])); ?>
-			<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $checkIn['CheckIn']['id']), null, __('Are you sure you want to delete # %s?', $checkIn['CheckIn']['id'])); ?>
+			<?php //echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $checkIn['CheckIn']['id']), null, __('Are you sure you want to delete # %s?', $checkIn['CheckIn']['id'])); ?>
 		</td>
 	</tr>
 <?php endforeach; ?>

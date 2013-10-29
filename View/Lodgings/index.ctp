@@ -1,6 +1,18 @@
 <div class="lodgings index">
 	<h2><?php echo __('Lodgings'); ?></h2>
-	<table cellpadding="0" cellspacing="0">
+	<div class="filter">
+            <?php    
+            echo $this->Form->create('Lodging', array(
+                'url' => array_merge(array('action' => 'index'), $this->params['pass'])
+                ));
+            echo $this->Form->input('name', array('div' => false, 'empty' => true));
+            echo $this->Form->input('locality', array('div' => false, 'empty' => true));
+            echo $this->Form->input('city', array('div' => false, 'empty' => true));
+            echo $this->Form->submit(__('Search', true), array('div' => false));
+            echo $this->Form->end();
+            ?>
+        </div>
+        <table cellpadding="0" cellspacing="0">
 	<tr>
 			<th><?php echo $this->Paginator->sort('id'); ?></th>
 			<th><?php echo $this->Paginator->sort('conference_id'); ?></th>

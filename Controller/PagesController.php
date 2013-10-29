@@ -45,6 +45,11 @@ class PagesController extends AppController {
  */
 	public $uses = array();
 
+        public function beforeFilter() {
+            parent::beforeFilter();
+            if($this->params['pass'][0] == 'registration') $this->Auth->allow(array('action' => 'display','registration'));
+        }
+
 /**
  * Displays a view
  *

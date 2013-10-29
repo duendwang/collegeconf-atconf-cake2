@@ -9,6 +9,53 @@ App::uses('AppModel', 'Model');
  */
 class Lodging extends AppModel {
 
+/**
+ * Display field
+ *
+ * @var string
+ */
+	
+        public $displayField = 'BB_name';
+
+        public $actsAs = array('Search.Searchable','Containable');
+
+        public $filterArgs = array(
+                array('name' => 'name', 'type' => 'query', 'method' => 'filterName'),
+                array('name' => 'locality', 'type' => 'query', 'field' => 'Locality.city', 'method' => 'filterLocality'),
+                array('name' => 'city', 'type' => 'query', 'method' => 'filterCity')
+        );
+        
+        public function filterName($data, $field = null){
+            if(empty($data['name'])){
+                return array();
+            }
+            $name = '%' . $data['name'] . '%';
+            return array (
+                    $this->alias . '.name LIKE' => $name
+            );
+        }
+        
+        public function filterLocality($data, $field = null){
+            if(empty($data['locality'])){
+                return array();
+            }
+            $locality = '%' . $data['locality'] . '%';
+            return array (
+                    'Locality.city LIKE' => $locality
+            );
+        }
+        
+        public function filterCity($data, $field = null){
+            if(empty($data['name'])){
+                return array();
+            }
+            $city = '%' . $data['name'] . '%';
+            return array (
+                
+                    $this->alias . '.city' => $city
+            );
+        }
+
 //TODO Set up virtual field according to location of conference, and displayField accordinngly
 
 /*
@@ -21,14 +68,6 @@ class Lodging extends AppModel {
             parent::__construct($id, $table, $ds);
             $this->virtualFields['BB_name'] = sprintf('CONCAT(%s.name, " ", %s.room)', $this->alias, $this->alias);
         }
-
-/**
- * Display field
- *
- * @var string
- */
-	
-        public $displayField = 'BB_name';
 
 /**
  * Validation rules

@@ -43,6 +43,22 @@ class Finance extends AppModel {
             )
         );
 
+        public $actsAs = array('Search.Searchable');
+
+        public $filterArgs = array(
+                array('name' => 'locality', 'type' => 'query', 'field' => 'Locality.city', 'method' => 'filterLocality')
+        );
+        
+        public function filterLocality($data, $field = null){
+            if(empty($data['locality'])){
+                return array();
+            }
+            $locality = '%' . $data['locality'] . '%';
+            return array (
+                    'Locality.city LIKE' => $locality
+            );
+        }
+
 /**
  * beforeSave callback
  *

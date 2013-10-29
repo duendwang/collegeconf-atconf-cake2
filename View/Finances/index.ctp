@@ -1,6 +1,16 @@
 <div class="finances index">
 	<h2><?php echo __('Finances'); ?></h2>
-	<table cellpadding="0" cellspacing="0">
+	<div class="filter">
+            <?php    
+            echo $this->Form->create('Finance', array(
+                'url' => array_merge(array('action' => 'index'), $this->params['pass'])
+                ));
+            echo $this->Form->input('locality', array('div' => false, 'empty' => true));
+            echo $this->Form->submit(__('Search', true), array('div' => false));
+            echo $this->Form->end();
+            //echo '<br><br>'.$this->Form->button('Add New Attendee',array('type' => 'button','onclick' => "location.href='".$this->Html->url(array('action' => 'add'))."'"));?>
+        </div>
+        <table cellpadding="0" cellspacing="0">
 	<tr>
 			<th><?php echo $this->Paginator->sort('id'); ?></th>
 			<th><?php echo $this->Paginator->sort('conference_id'); ?></th>

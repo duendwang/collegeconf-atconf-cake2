@@ -31,6 +31,13 @@ class User extends AppModel {
  */
         public $actsAs = array('Acl' => array('type' => 'requester'));
 
+/**
+ * Display field
+ *
+ * @var string
+ */
+	public $displayField = 'name';
+
 /*
  * constuct method
  * 
@@ -43,11 +50,16 @@ class User extends AppModel {
        }
 
 /**
- * Display field
+ * beforeSave method
  *
- * @var string
+ * @return null
  */
-	public $displayField = 'name';
+	public function beforeSave() {
+            if (!empty($this->data[$this->alias]['new_password'])) {
+                $this->data[$this->alias]['password'] = AuthComponent::password($this->data[$this->alias]['new_password']);
+            }
+            return true;
+	}
 
 /**
  * Validation rules

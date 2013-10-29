@@ -38,3 +38,25 @@
 		<li><?php echo $this->Html->link(__('New Finance Attendee'), array('controller' => 'attendees_finances', 'action' => 'add')); ?> </li>
 	</ul>
 </div>
+<?php   
+        echo $this->Html->scriptBlock('
+                function displayBalance() {
+                    var count = $("#FinanceCount").val();
+                    var rate = $("#FinanceRate").val();                
+                    var charge = -count*rate;
+                    var payment = $("#FinancePayment").val()
+                    var balance = Number(charge) + Number(payment);   
+                    $("#FinanceCharge").val(charge);
+                    $("#FinanceBalance").val(balance);                    
+                }
+
+                $("#FinanceCount").change(displayBalance);
+                $("#FinanceRate").change(displayBalance);
+                $("#FinanceCharge").change(displayBalance);
+                $("#FinancePayment").change(displayBalance);
+                
+                displayBalance();');
+        
+        //$this->Js->event('keypress', '$(\'input[name="data[Attendee][id]"]\').val(\'\');')
+        echo $this->Js->writeBuffer();
+?>
