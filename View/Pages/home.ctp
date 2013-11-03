@@ -42,7 +42,7 @@
                 <p><?php echo $this->Html->link(__('Canceled and No-show attendees'), array('controller' => 'attendees', 'action' => 'cancel_report',true)); ?></p>
                 <?php /**<p><?php echo $this->Html->link(__('Attendees not yet checked in'), array('controller' => 'attendees', 'action' => 'noshow_report')); ?></p>**/?>
                 <p><?php echo $this->Html->link(__('Attendee summary by locality'), array('controller' => 'attendees', 'action' => 'summary')); ?></p>
-		<p><?php echo $this->Html->link(__('Finance summary by locality'), array('controller' => 'finances', 'action' => 'report')); ?></p>
+		<p><?php echo $this->Html->link(__('Finance summary by locality'), array('controller' => 'finances', 'action' => 'summary')); ?></p>
             </td>
         </tr>
     </table><br>

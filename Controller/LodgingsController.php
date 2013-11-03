@@ -35,36 +35,20 @@ class LodgingsController extends AppController {
  * @return void
  */
         public function capacity($id = null) {
-                $three_days_ago = date('Y-m-d', strtotime('-3 days'));
-                $current_conference = $this->Lodging->Conference->find('list',array('conditions' => array('Conference.start_date < NOW()',"Conference.start_date >= '$three_days_ago'")));
-                $lodgings = $this->Lodging->find('all',array('conditions' => array('Lodging.conference_id' => $current_conference),'recursive' => 0));
-                foreach ($lodgings as $lodging):
-                    $attendee = $this->Lodging->Attendee->find('first',array('conditions' => array('Attendee.lodging_id' => $lodging['Lodging']['id'])));
-                    //debug($attendee);
-                    //exit;
-                    $capacities[] = array(
-                        'house' => $lodging['Lodging']['name'],
-                        'room' => $lodging['Lodging']['room'],
-                        'openings' => $lodging['Lodging']['capacity'] - $this->Lodging->Attendee->find('count',array('conditions' => array('Attendee.lodging_id' => $lodging['Lodging']['id']))),
-                        'assigned_locality' => $attendee['Locality']['city'],
-                        'assigned_gender' => $attendee['Attendee']['gender'],
-                        );
-                endforeach;
-                /**$capacities = $this->Lodging->query("
-                    SELECT lodgings1.id, lodgings1.name AS 'Host Name', lodgings1.lodging_locality AS 'Lodging Locality', lodgings1.capacity AS 'Host Capacity',  
-                    COUNT(attendees.lodging_id) AS 'Capacity Occupied', attendees.gender AS 'Attendee Gender', localities.city 'Attendee Locality'
-                    FROM attendees 
-                    INNER JOIN (SELECT lodgings.id, lodgings.name, lodgings.capacity, localities.city AS lodging_locality 
-                            FROM lodgings 
-                            INNER JOIN localities 
-                            ON (lodgings.locality_id = localities.id)) AS lodgings1
-                    ON (lodgings1.id = attendees.lodging_id)
-                    INNER JOIN localities ON (localities.id = attendees.locality_id) 
-                    GROUP BY attendees.lodging_id
-                ");
-                //print_r($capacities;**/
-                $this->set(compact('capacities'));
-                
+            $lodgings = $this->Lodging->find('all',array('recursive' => 0));
+            foreach ($lodgings as $lodging):
+                $attendee = $this->Lodging->Attendee->find('first',array('conditions' => array('Attendee.lodging_id' => $lodging['Lodging']['id']),'fields' => array('DISTINCT(Attendee.locality_id','Attendee.gender')));
+                debug($attendee);
+                exit;
+                $capacities[] = array(
+                    'house' => $lodging['Lodging']['name'],
+                    'room' => $lodging['Lodging']['room'],
+                    'openings' => $lodging['Lodging']['capacity'] - $this->Lodging->Attendee->find('count',array('conditions' => array('Attendee.lodging_id' => $lodging['Lodging']['id']))),
+                    'assigned_locality' => $attendee['Locality']['city'],
+                    'assigned_gender' => $attendee['Attendee']['gender'],
+                );
+            endforeach;
+            $this->set(compact('capacities'));
         }
 
 /**

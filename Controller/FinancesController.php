@@ -22,41 +22,13 @@ class FinancesController extends AppController {
  */
 	public function index() {
                 $this->Prg->commonProcess();
-                //$this->paginate = array('conditions' => $this->Finance->parseCriteria($this->passedArgs));
-                $locality_ids = $this->Finance->Locality->RegistrationStep->find('list',array('conditions' => array('RegistrationStep.conference_id' => $this->Session->read('Conference.default'),'RegistrationStep.user_id =' => $this->Auth->user('id')),'fields' => 'RegistrationStep.locality_id'));
-                $this->set('localities',$this->Finance->Locality->find('all',array('conditions' => array('Locality.id' => $locality_ids),'recursive' => 0,'order' => 'Locality.name')));
-		$this->Finance->recursive = 0;
-                if ($this->Auth->user('UserType.account_type_id') == 4) {
-                    $this->paginate = array(
-                        'conditions' => array(
-                            'Finance.conference_id' => $this->Session->read('Conference.selected'),
-                            'Finance.locality_id =' => $this->Auth->user('locality_id'),
-                            'OR' => array(
-                                'Finance.count >' => 0,
-                                'Finance.finance_type_id >=' => 5,
-                            )
-                        ),
-                        'contain' => $this->Finance->contain,
-                        'order' => array('Finance.receive_date' => 'asc')
-                    );
-                    $this->set('totals',$this->Finance->find('all',array('conditions' => array('Finance.conference_id' => '3','Finance.locality_id' => $this->Auth->user('locality_id')),'fields' => array('Finance.conference_id','sum(count) as total_count','sum(charge) as total_charge','sum(payment) as total_payment','sum(balance) as total_balance'),'group' => array('Finance.conference_id'),'recursive' => 2)));
-                } elseif(in_array($this->Auth->user('UserType.account_type_id'),array(2,3))) {
-                    if(isset($locality)) {
-                        $this->paginate = array(
-                            'conditions' => array('Finance.conference_id' => $this->Session->read('Conference.selected'),'Finance.locality_id =' => $locality),
-                            'contain' => $this->Finance->contain,
-                            'order' => array('Finance.receive_date' => 'asc')
-                        );
-                        $this->set('totals',$this->Finance->find('all',array('conditions' => array('Finance.conference_id' => $this->Session->read('Conference.selected'),'Finance.locality_id' => $locality),'fields' => array('Finance.conference_id','sum(count) as total_count','sum(charge) as total_charge','sum(payment) as total_payment','sum(balance) as total_balance'),'group' => array('Finance.conference_id'))));
-                    } else {
-                        $this->paginate = array(
-                            'conditions' => array('Finance.conference_id' => $this->Session->read('Conference.selected'),'Finance.locality_id' => $locality_ids),
-                            'contain' => $this->Finance->contain,
-                            'order' => array('Finance.receive_date' => 'asc')
-                        );
-                    }
-                }
-		//$this->set('finances', $this->paginate());
+                $this->Finance->recursive = 0;
+                $this->paginate = array(
+                    'conditions' => $this->Finance->parseCriteria($this->passedArgs),
+                    'contain' => $this->Finance->contain,
+                    'order' => array('Finance.locality')
+                );
+                
                 $finances = $this->paginate();
                 foreach ($finances as &$finance):
                     if(true) {
@@ -86,13 +58,58 @@ class FinancesController extends AppController {
 	}
 
 /**
- * finance_report method
+ * report method
  *
- * @param string $id
+ * @return void
+ */
+	public function report($locality = null) {
+                $this->Finance->recursive = 0;
+                if(isset($locality)) {
+                    $this->paginate = array(
+                        'conditions' => array('Finance.conference_id' => $this->Session->read('Conference.selected'),'Finance.locality_id =' => $locality),
+                        'contain' => $this->Finance->contain,
+                        'order' => array('Finance.receive_date' => 'asc'),
+                    );
+                    $this->set('totals',$this->Finance->find('all',array('conditions' => array('Finance.conference_id' => $this->Session->read('Conference.selected'),'Finance.locality_id' => $locality),'fields' => array('Finance.conference_id','sum(count) as total_count','sum(charge) as total_charge','sum(payment) as total_payment','sum(balance) as total_balance'),'recursive' => 2)));
+                } else {
+                    $this->redirect(array('action' => 'index'));
+                }
+
+                $finances = $this->paginate();
+                foreach ($finances as &$finance):
+                    if(true) {
+                    //if($finance['Finance']['finance_type_id'] !== '1' || strpos($finance['Finance']['comment'],'No lodging') !== false || strpos($finance['Finance']['comment'],'Nurse') !== false) {
+                        $finance_comment = ' ';
+                        foreach ($finance['FinanceAttendee'] as $finance_attendee):
+                            if (!empty($finance_attendee['AddAttendee']) && !empty($finance_attendee['CancelAttendee'])) {
+                                $finance_comment = $finance_comment.
+                                        $finance_attendee['AddAttendee']['name'].
+                                        ' for '.
+                                        $finance_attendee['CancelAttendee']['name'];
+                            } elseif (!empty($finance_attendee['AddAttendee'])) {
+                                $finance_comment = $finance_comment.
+                                        $finance_attendee['AddAttendee']['name'].
+                                        ',';
+                            } elseif (!empty($finance_attendee['CancelAttendee'])) {
+                                $finance_comment = $finance_comment.
+                                        $finance_attendee['CancelAttendee']['name'].
+                                        ',';
+                            }
+                        endforeach;
+                        $finance_comment = substr($finance_comment,0,-1);
+                        $finance['Finance']['comment'] = $finance['Finance']['comment'].$finance_comment;
+                    }
+                endforeach;
+                $this->set(compact('finances'));
+	}
+
+/**
+ * summary method
+ *
  * @return void
  */
         
-        public function report() {
+        public function summary() {
             $this->Finance->recursive = 2;
             $this->paginate = array(
                 'fields' => array(
@@ -144,19 +161,14 @@ class FinancesController extends AppController {
 		if ($this->request->is('post')) {
 			$this->Finance->create();
 			if ($this->Finance->save($this->request->data)) {
-				$this->Session->setFlash(__('The finance has been saved'));
+				$this->Session->setFlash(__('The finance has been saved'),'success');
 				$this->redirect(array('action' => 'index'));
 			} else {
-				$this->Session->setFlash(__('The finance could not be saved. Please, try again.'));
+				$this->Session->setFlash(__('The finance could not be saved. Please, try again.'),'failure');
 			}
 		}
-                $locality_ids = $this->Finance->Locality->RegistrationStep->find('list',array('conditions' => array('RegistrationStep.conference_id' => $this->Session->read('Conference.default'),'RegistrationStep.user_id =' => $this->Auth->user('id')),'fields' => 'RegistrationStep.locality_id'));
-                $conferences = $this->Finance->Conference->find('list',array('conditions' => array('Conference.id' => $this->Finance->Conference->current_term_conferences())));
-		if (in_array($this->Auth->user('UserType.account_type_id'),array(2, 5))) {
-                    $localities = $this->Finance->Locality->find('list');
-                } else {
-                    $localities = $this->Finance->Locality->find('list', array('conditions' => array('Locality.id' => $locality_ids)));
-                }
+                $conferences = $this->Finance->Conference->find('list',array('conditions' => array('Conference.id' => $this->Finance->Conference->current_conference())));
+                $localities = $this->Finance->Locality->find('list');
 		$financeTypes = $this->Finance->FinanceType->find('list',array('conditions' => array('FinanceType.id NOT' => 3),'order' => 'FinanceType.id'));
 		//$creators = $this->Finance->Creator->find('list');
 		//$modifiers = $this->Finance->Modifier->find('list');
@@ -174,10 +186,6 @@ class FinancesController extends AppController {
 		if (!$this->Finance->exists($id)) {
 			throw new NotFoundException(__('Invalid finance'));
 		}
-                if ($this->Auth->user('UserType.account_type_id') == 4) {
-                    $this->Session->setFlash(__('You are not authorized to view that page. If there is an error with your finances, please contact the registration team.'),'failure');
-                    $this->redirect(array('action' => 'index'));
-                }
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->Finance->save($this->request->data)) {
 				$this->Session->setFlash(__('The finance has been saved'),'success');
@@ -193,13 +201,8 @@ class FinancesController extends AppController {
                         }
                         unset($this->request->data['Finance']['balance']);
 		}
-                $locality_ids = $this->Finance->Locality->RegistrationStep->find('list',array('conditions' => array('RegistrationStep.conference_id' => $this->Session->read('Conference.selected'),'RegistrationStep.user_id =' => $this->Auth->user('id')),'fields' => 'RegistrationStep.locality_id'));
-                $conferences = $this->Finance->Conference->find('list',array('conditions' => array('Conference.id' => $this->Finance->Conference->current_term_conferences())));
-		if (in_array($this->Auth->user('UserType.account_type_id'),array(2, 5))) {
-                    $localities = $this->Finance->Locality->find('list');
-                } else {
-                    $localities = $this->Finance->Locality->find('list', array('conditions' => array('Locality.id' => $locality_ids)));
-                }
+                $conferences = $this->Finance->Conference->find('list',array('conditions' => array('Conference.id' => $this->Finance->Conference->current_conference())));
+                $localities = $this->Finance->Locality->find('list');
 		$financeTypes = $this->Finance->FinanceType->find('list');
 		//$creators = $this->Finance->Creator->find('list');
 		//$modifiers = $this->Finance->Modifier->find('list');

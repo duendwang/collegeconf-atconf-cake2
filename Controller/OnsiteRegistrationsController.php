@@ -66,7 +66,7 @@ class OnsiteRegistrationsController extends AppController {
                     }
                 }
 		$attendees = $this->OnsiteRegistration->find('all',array('conditions' => array('OnsiteRegistration.need_cashier' => 1,'OnsiteRegistration.cashier' => null),'order' => array('Attendee.first_name' => 'asc','Attendee.last_name' => 'asc')));
-                $localities = $this->OnsiteRegistration->Attendee->Locality->find('list',array('conditions' => array('Locality.id NOT' => array('1','2','3','44')),'fields' => array('Locality.city')));
+                $localities = $this->OnsiteRegistration->Attendee->Locality->find('list',array('conditions' => array('Locality.id NOT' => array('1','2','3','44')),'fields' => array('Locality.name')));
                 $this->set(compact('attendees','localities'));
 	}
 

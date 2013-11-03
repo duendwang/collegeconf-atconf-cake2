@@ -27,51 +27,16 @@ class UsersController extends AppController {
 	public function login() {
             //$this->layout = 'login';
             if ($this->request->is('post')) {
-		if ($this->Auth->login()) {
-                    //get the current conference
-                    $this->loadModel('Conference');
-                    $current_month = date('n');
-                    $current_year = date('Y');
-                    
-                    //determine the current term
-                    if ($current_month <= 6) $current_term = 'Spring';
-                    else if ($current_month >= 7) $current_term = 'Fall';
-                    
-                    //find all conferences in current term
-                    $near_conferences = array_merge($this->Conference->find('all',array('conditions' => array('Conference.year' => $current_year,'Conference.term' => $current_term),'order' => 'Conference.start_date','recursive' => -1)));
-                    
-                    //If only 1 conference, then set that as default conference.
-                    //Otherwise which one should be set according to account type.
-                    if (count($near_conferences) > 1) {
-                        foreach ($near_conferences as $near_conference):
-                            $active_userType = $this->Auth->user('UserType.account_type_id');
-                            switch ($active_userType) {
-                                case 1:
-                                case 2:
-                                case 3:
-                                    //Default conference to switch to next conference beginning Monday after previous conference.
-                                    if (strtotime('now') < strtotime($near_conference['Conference']['start_date'].'+3 days')) {
-                                        $current_conference = $near_conference['Conference']['id'];
-                                        break 2;
-                                    } else break;
-                                case 4:
-                                    //Default conference to match locality preferred conference for locality accounts
-                                    if ($near_conference['Conference']['part'] == $this->Auth->user('Locality.preferred_conference')) {
-                                        $current_conference = $near_conference['Conference']['id'];
-                                        break 2;
-                                    } else break;
-                            }
-                        endforeach;
-                        if (!isset($current_conference)) $current_conference = $near_conferences[count($near_conferences)-1]['Conference']['id'];
-                    } else $current_conference = $near_conferences[0]['Conference']['id'];
-                    $this->Session->write('Conference.default',$current_conference);
-                    $this->Session->write('Conference.selected',$current_conference); //Automatically selects default conference.
-                    
+		if ($this->Auth->login() && $this->Auth->user('UserType.account_type_id') !== '4') {
                     //Set last_login field for user account
                     $this->User->id = $this->Auth->user('id');
                     $this->User->saveField('last_login',date('Y-m-d h:i:s',strtotime('now')));
                     
                     $this->redirect($this->Auth->redirect());
+                } elseif ($this->Auth->user('UserType.account_type_id') == '4') {
+                    //Localities cannot log in
+                    $this->Session->setFlash(__('You do not have permission to log in here.'),'failure');
+                    $this->redirect($this->Auth->logout());
                 } else {
                     $this->Session->setFlash(__('Invalid username or password. Please make sure caps lock isn\'t on and try again'),'failure');
                 }

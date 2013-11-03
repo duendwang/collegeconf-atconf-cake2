@@ -71,7 +71,11 @@ class AttendeesController extends AppController {
                     'limit' => 100,
                     'recursive' => 0
                 );
-		$this->set('confcontacts',$this->paginate());
+                $confcontacts = $this->paginate();
+                foreach ($confcontacts as &$cc):
+                    $cc['Attendee']['status'] = $this->Attendee->get_status($cc['Attendee']['id']);
+                endforeach;
+		$this->set(compact('confcontacts'));
 	}
 
 /**
@@ -82,14 +86,15 @@ class AttendeesController extends AppController {
         public function cancel_report($no_show = false) {
             $this->Attendee->recursive = 0;
             if ($no_show) {
-                $condition = array('OR' => array('Attendee.cancel_count' => 1, 'Attendee.check_in_count' => 0));
+                $conditions = array('OR' => array('Attendee.cancel_count' => 1, 'Attendee.check_in_count' => 0));
             } else {
-                $condition = array('Attendee.cancel_count' => 1);
+                $conditions = array('Attendee.cancel_count' => 1);
             }
             $this->paginate = array(
-                'condition' => $condition,
+                'conditions' => $conditions,
                 'order' => array('Locality.name' => 'asc')
             );
+            $this->set('cancellations',$this->paginate());
         }
 
 /**
@@ -102,7 +107,7 @@ class AttendeesController extends AppController {
                 $high_school_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 1)));
                 $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5))));
                 $canceled_count = $this->Attendee->find('count',array('conditions' => array('Attendee.cancel_count >' => 0)));
-                $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0)));
+                $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0,'Attendee.cancel_count' => 0)));
                 
                 //Get conference start date
                 $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => -1));

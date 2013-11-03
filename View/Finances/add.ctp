@@ -1,25 +1,51 @@
-<div class="finances form">
+<div class="content">
+    <style>
+        table {
+            margin-bottom: 0px;
+	}
+        table tr td {
+            border-bottom:0px;
+        }
+        table tr:nth-child(even) {
+            background: #ffffff;
+        }
+    </style>
 <?php echo $this->Form->create('Finance'); ?>
 	<fieldset>
 		<legend><?php echo __('Add Finance'); ?></legend>
-	<?php
-		echo $this->Form->input('conference_id');
-		echo $this->Form->input('receive_date');
-		echo $this->Form->input('locality_id');
-		echo $this->Form->input('finance_type_id');
-		echo $this->Form->input('count');
-		echo $this->Form->input('rate');
-		echo $this->Form->input('charge');
-		echo $this->Form->input('payment');
-		echo $this->Form->input('balance');
-		echo $this->Form->input('comment');
-		echo $this->Form->input('creator_id');
-		echo $this->Form->input('modifier_id');
-	?>
+	<table>
+                <tr>
+			<td width=100></td>
+			<td><?php echo $this->Form->input('conference_id',array('empty' => true,'default' => null));?></td>
+			<td><?php echo $this->Form->input('locality_id',array('empty' => true,'default' => null));?></td>
+		</tr>
+		<tr>
+			<td width=100></td>
+			<td><?php echo $this->Form->input('receive_date',array('label' => 'Date','empty' => true,'default' => null));?></td>
+			<td><?php echo $this->Form->input('finance_type_id',array('label' => 'Description','empty' => true,'default' => null));?></td>
+		</tr>
+		<tr>
+			<td width=100></td>
+			<td><?php echo $this->Form->input('count');?></td>
+			<td><?php echo $this->Form->input('rate');?></td>
+		</tr>
+		<tr>
+			<td width=100></td>
+                        <td><?php echo $this->Form->input('charge',array('label' => 'Charge (leave blank unless directed to fill in)'));?></td>
+			<td>
+                            <?php echo $this->Form->input('payment');
+                            echo $this->Form->input('balance',array('hidden' => true,'label' => false));?>
+                        </td>
+		</tr>
+                <tr>
+			<td width=100></td>
+			<td colspan="3"><?php echo $this->Form->input('comment');?></td>
+		</tr>
+            </table>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit')); ?>
 </div>
-<div class="actions">
+<?php /**<div class="actions">
 	<h3><?php echo __('Actions'); ?></h3>
 	<ul>
 
@@ -28,33 +54,6 @@
 		<li><?php echo $this->Html->link(__('New Conference'), array('controller' => 'conferences', 'action' => 'add')); ?> </li>
 		<li><?php echo $this->Html->link(__('List Localities'), array('controller' => 'localities', 'action' => 'index')); ?> </li>
 		<li><?php echo $this->Html->link(__('New Locality'), array('controller' => 'localities', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Finance Types'), array('controller' => 'finance_types', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Finance Type'), array('controller' => 'finance_types', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Users'), array('controller' => 'users', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Creator'), array('controller' => 'users', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Attendees Finances'), array('controller' => 'attendees_finances', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Finance Attendee'), array('controller' => 'attendees_finances', 'action' => 'add')); ?> </li>
 	</ul>
 </div>
-<?php   
- /**       echo $this->Html->scriptBlock('
-                function displayBalance() {
-                    var count = $("#FinanceCount").val();
-                    var rate = $("#FinanceRate").val();                
-                    var charge = -count*rate;
-                    var payment = $("#FinancePayment").val()
-                    var balance = Number(charge) + Number(payment);   
-                    $("#FinanceCharge").val(charge);
-                    $("#FinanceBalance").val(balance);                    
-                }
-
-                $("#FinanceCount").change(displayBalance);
-                $("#FinanceRate").change(displayBalance);
-                $("#FinanceCharge").change(displayBalance);
-                $("#FinancePayment").change(displayBalance);
-                
-                displayBalance();');
-        
-        //$this->Js->event('keypress', '$(\'input[name="data[Attendee][id]"]\').val(\'\');')
-        echo $this->Js->writeBuffer();
-**/?>
+*/?>

@@ -3,16 +3,14 @@
 	<table cellpadding="0" cellspacing="0">
 	<tr>
 			<th><?php echo $this->Paginator->sort('id'); ?></th>
-			<th><?php echo $this->Paginator->sort('attendee_id'); ?></th>
+			<th><?php echo $this->Paginator->sort('Attendee.first_name'); ?></th>
+                        <th><?php echo $this->Paginator->sort('Attendee.last_name'); ?></th>
 			<th><?php echo $this->Paginator->sort('timestamp'); ?></th>
 			<th class="actions"><?php echo __('Actions'); ?></th>
 	</tr>
 	<?php foreach ($checkIns as $checkIn): ?>
 	<tr>
 		<td><?php echo h($checkIn['CheckIn']['id']); ?>&nbsp;</td>
-		<td>
-			<?php echo $this->Html->link($checkIn['Attendee']['id'], array('controller' => 'attendees', 'action' => 'view', $checkIn['Attendee']['id'])); ?>
-		</td>
                 <td><?php echo h($checkIn['Attendee']['first_name']); ?>&nbsp;</td>
                 <td><?php echo h($checkIn['Attendee']['last_name']); ?>&nbsp;</td>
 		<td><?php echo h($checkIn['CheckIn']['timestamp']); ?>&nbsp;</td>
