@@ -18,10 +18,12 @@ class Payment extends AppModel {
  */
 
         public function beforeSave($options = array()) {
-            if (empty($this->data[$this->alias]['id'])) {
-                $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
-            } else {
-                $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+            if (!empty($_SESSION['Auth']['User'])) {
+                if (empty($this->data[$this->alias]['id'])) {
+                    $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
+                } else {
+                    $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+                }
             }
             return true;
         }
@@ -46,7 +48,7 @@ class Payment extends AppModel {
 			'numeric' => array(
 				'rule' => array('numeric'),
 				//'message' => 'Your custom message here',
-				'allowEmpty' => false,
+				'allowEmpty' => true,
 				'required' => true,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
@@ -67,17 +69,18 @@ class Payment extends AppModel {
 				'rule' => array('money'),
 				//'message' => 'Your custom message here',
 				'allowEmpty' => true,
-				//'required' => false,
+				'required' => false,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
+                //TODO set up custom validation with check_number and check
 		'check_number' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
 				//'message' => 'Your custom message here',
 				'allowEmpty' => true,
-				//'required' => false,
+				'required' => false,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
@@ -87,7 +90,7 @@ class Payment extends AppModel {
 				'rule' => array('money'),
 				//'message' => 'Your custom message here',
 				'allowEmpty' => true,
-				//'required' => false,
+				'required' => false,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
@@ -97,7 +100,7 @@ class Payment extends AppModel {
 				'rule' => array('money'),
 				//'message' => 'Your custom message here',
 				'allowEmpty' => true,
-				//'required' => false,
+				'required' => false,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
@@ -107,7 +110,7 @@ class Payment extends AppModel {
 				'rule' => array('money'),
 				//'message' => 'Your custom message here',
 				'allowEmpty' => true,
-				//'required' => false,
+				'required' => false,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),

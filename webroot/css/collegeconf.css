@@ -23,7 +23,8 @@
 
 /** General Style Info **/
 body {
-	background: #003d4c;
+	/**background: #003d4c;**/
+        background: #fff;
 	color: #fff;
 	font-family:'lucida grande',verdana,helvetica,arial,sans-serif;
 	font-size:90%;
@@ -74,11 +75,13 @@ p {
 
 /** Layout **/
 #container {
+        /**background: #fff;**/
 	text-align: left;
 }
 
 #header{
-	padding: 10px 20px;
+	background: #003d4c;
+        padding: 10px 20px;
 }
 #header h1 {
 	line-height:20px;
@@ -102,7 +105,7 @@ p {
 	clear: both;
 	color: #333;
 	padding: 10px 20px 40px 20px;
-	overflow: auto;
+	overflow: visible;
 }
 #footer {
 	clear: both;
@@ -340,7 +343,7 @@ div.checkbox label {
 input[type=radio] {
 	float:left;
 	width:auto;
-	margin: 4px 0;
+	margin: 6px 0;
 	padding: 0;
 	line-height: 26px;
 }
@@ -739,7 +742,7 @@ pre {
 }
 
 /**multiflash**/
-.message, .info, .success, .warning, .error /**.failure**/ {
+.message, .info, .success, .warning, .error {
     border: 1px solid;
     margin: 10px 0px;
     padding:15px 10px 15px 65px;
@@ -751,28 +754,23 @@ pre {
     /* color: #00529B; */
     border-color: #00529B;
     background-color: #BDE5F8;
-    background-image: url('../img/message/info.png');
+    background-image: url('../img/flashmsg/info.png');
 }
 .success {
     /* color: #4F8A10; */
     border-color: #4F8A10;
     background-color: #DFF2BF;
-    background-image:url('../img/message/success.png');
+    background-image:url('../img/flashmsg/success.png');
 }
 .warning {
     /* color: #9F6000; */
     border-color: #9F6000;
     background-color: #FFFABF;
-    background-image: url('../img/message/warning.png');
+    background-image: url('../img/flashmsg/warning.png');
 }
 .error {
     /* color: #D8000C; */
     border-color: #D8000C;
     background-color: #FFBABA;
-    background-image: url('../img/message/error.png');
+    background-image: url('../img/flashmsg/error.png');
 }
-/**.failure {
-    border-color: #c43c35;
-    background-color: #c43c35;
-    background-image: url('../img/message/failure.png');
-}**/

@@ -98,8 +98,8 @@ class PartTimeRegistration extends AppModel {
 			'boolean' => array(
 				'rule' => array('boolean'),
 				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
+				'allowEmpty' => true,
+				'required' => false,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),

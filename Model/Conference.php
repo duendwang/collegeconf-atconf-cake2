@@ -25,26 +25,18 @@ class Conference extends AppModel {
  * 
  * Get all conferences in this term
  */
-    public function current_term_conferences() {
-        $current_month = date('n');
-        $current_year = date('Y');
-        
-        //determine the current term
-        if ($current_month <= 6) $current_term = 'Spring';
-        else if ($current_month >= 7) $current_term = 'Fall';
-        
-        //find all conferences in current term
-        $near_conferences = $this->find('list',array(
+    public function current_conference() {
+        //find conference that is still going on
+        $current_conference = $this->find('list',array(
             'conditions' => array(
-                'Conference.year' => $current_year,
-                'Conference.term' => $current_term
-                ),
+                'Conference.start_date < NOW()',
+                'Conference.start_date >' => date('Y-m-d',strtotime('-3 days')),
+            ),
             'fields' => 'Conference.id',
-            'order' => 'Conference.start_date',
-            'recursive' => -1
+            'recursive' => -1,
         ));
         
-        return $near_conferences;
+        return $current_conference;
     }
 
 /**
@@ -53,28 +45,16 @@ class Conference extends AppModel {
  * @return array
  */
 
-        public function conference_dates($conference = null) {
-            if ($conference == null) {
-                $conference = $_SESSION['Conference']['default'];
+        public function conference_info($conference_id = null) {
+            if ($conference_id == null) {
+                $conference_id = $this->current_conference();
             }
-            $start_date = $this->find('list',array('conditions' => array('Conference.id' => $conference),'fields' => 'Conference.start_date'));
-            $conference_deadlines = $this->ConferenceDeadlineException->ConferenceDeadline->find('all',array('conditions' => array('ConferenceDeadline.id' => array('6','8'))));
-            $conference_deadline_exceptions = $this->ConferenceDeadlineException->find('all',array('conditions' => array('ConferenceDeadlineException.conference_id' => $conference,'ConferenceDeadlineException.conference_deadline_id' => array('6','8'))));
-            foreach ($conference_deadlines as $deadline):
-                if ($deadline['ConferenceDeadline']['id'] === '6') $first_deadline = strtotime('-'.(($deadline['ConferenceDeadline']['weeks_before']*7)+(6-$deadline['ConferenceDeadline']['weekday_id'])-1).' days',strtotime($start_date[$conference]));
-                if ($deadline['ConferenceDeadline']['id'] === '8') $second_deadline = strtotime('-'.(($deadline['ConferenceDeadline']['weeks_before']*7)+(6-$deadline['ConferenceDeadline']['weekday_id'])-1).' days',strtotime($start_date[$conference]));
-            endforeach;
-            if (!empty($conference_deadline_exceptions)) {
-                foreach ($conference_deadline_exceptions as $exception):
-                    if ($exception['ConferenceDeadlineException']['conference_deadline_id'] === '6') $first_deadline = strtotime('+1 day',strtotime($exception['ConferenceDeadlineException']['date']));
-                    if ($exception['ConferenceDeadlineException']['conference_deadline_id'] === '8') $second_deadline = strtotime('+1 day',strtotime($exception['ConferenceDeadlineException']['date']));
-                endforeach;
-            }
-            $conference_dates['start'] = strtotime($start_date[$conference]);
-            $conference_dates['first_deadline'] = $first_deadline;
-            $conference_dates['second_deadline'] = $second_deadline;
-            $conference_dates['end'] = strtotime('+2 days',$conference_dates['start']);
-            return $conference_dates;
+            $conference = $this->find('first',array('conditions' => array('Conference.id' => $conference),'fields' => array('Conference.start_date','Conference.code'),'recursive' => -1));
+
+            $conference_info['code'] = $conference['Conference']['code'];
+            $conference_info['start_date'] = strtotime($conference['Conference']['start_date']);
+            $conference_info['end_date'] = strtotime('+2 days',$conference_info['start_date']);
+            return $conference_info;
         }
 
 /**

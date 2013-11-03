@@ -1,65 +1,102 @@
-<div class="attendees form">
+<div class="content">
+    <style>
+        table {
+            margin-bottom: 0px;
+	}
+        table tr td {
+            border-bottom:0px;
+        }
+        table tr:nth-child(even) {
+            background: #ffffff;
+        }
+    </style>
 <?php echo $this->Form->create('Attendee'); ?>
-	<fieldset>
-		<legend><?php echo __('Add Attendee'); ?></legend>
-	<?php
-		echo $this->Form->input('conference_id');
-		echo $this->Form->input('first_name');
-		echo $this->Form->input('last_name');
-		echo $this->Form->input('gender');
-		echo $this->Form->input('locality_id');
-		echo $this->Form->input('campus_id');
-		echo $this->Form->input('lrc');
-		echo $this->Form->input('conf_contact');
-		echo $this->Form->input('new_one');
-		echo $this->Form->input('group');
-		echo $this->Form->input('allergies');
-		echo $this->Form->input('status_id');
-		echo $this->Form->input('cell_phone');
-		echo $this->Form->input('email');
-		echo $this->Form->input('city_state');
-		echo $this->Form->input('lodging_id');
-		echo $this->Form->input('submitter');
-		echo $this->Form->input('rate');
-		echo $this->Form->input('paid_at_conf');
-		echo $this->Form->input('comment');
-		echo $this->Form->input('amt_paid');
-		echo $this->Form->input('check_num');
-		echo $this->Form->input('paid_date');
-		echo $this->Form->input('creator_id');
-		echo $this->Form->input('modifier_id');
-	?>
-	</fieldset>
-<?php echo $this->Form->end(__('Submit')); ?>
-</div>
-<div class="actions">
-	<h3><?php echo __('Actions'); ?></h3>
-	<ul>
-
-		<li><?php echo $this->Html->link(__('List Attendees'), array('action' => 'index')); ?></li>
-		<li><?php echo $this->Html->link(__('List Conferences'), array('controller' => 'conferences', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Conference'), array('controller' => 'conferences', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Localities'), array('controller' => 'localities', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Locality'), array('controller' => 'localities', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Campuses'), array('controller' => 'campuses', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Campus'), array('controller' => 'campuses', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Statuses'), array('controller' => 'statuses', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Status'), array('controller' => 'statuses', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Lodgings'), array('controller' => 'lodgings', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Lodging'), array('controller' => 'lodgings', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Users'), array('controller' => 'users', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Creator'), array('controller' => 'users', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Cancels'), array('controller' => 'cancels', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Cancel'), array('controller' => 'cancels', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Check Ins'), array('controller' => 'check_ins', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Check In'), array('controller' => 'check_ins', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Onsite Registrations'), array('controller' => 'onsite_registrations', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Onsite Registration'), array('controller' => 'onsite_registrations', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Part Time Registrations'), array('controller' => 'part_time_registrations', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Part Time Registration'), array('controller' => 'part_time_registrations', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Payments'), array('controller' => 'payments', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Payment'), array('controller' => 'payments', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Attendees Finances'), array('controller' => 'attendees_finances', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Attendee Finance Add'), array('controller' => 'attendees_finances', 'action' => 'add')); ?> </li>
-	</ul>
+    <h2><?php echo 'Add Conference Attendee'; ?></h2>
+    <br>
+    <center>
+        <?php echo 'Is this attendee a:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+            $this->Form->input('new_one', array('label' => false, 'div' => false, 'style' => 'float: none')),
+            'new one?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+            $this->Form->input('conf_contact', array('label' => false, 'div' => false, 'style' => 'float: none')),
+            'conference contact?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+            $this->Form->input('nurse', array('label' => false, 'type' => 'checkbox','div' => false, 'style' => 'float: none')),
+            'conference-designated nurse? <br><br>';?>
+    </center>
+    <?php echo $this->Form->input('conference_id', array('hidden' => true,'label' => false, 'div' => false, 'style' => 'float: none'));?>
+    
+    <fieldset>
+        <legend><?php echo __('Personal');?><hr width="500"></legend>
+        <table>
+            <tr>
+                <td width=25></td>
+		<td><?php echo $this->Form->input('first_name');?></td>
+		<td><?php echo $this->Form->input('last_name');?></td>
+		<td><?php echo $this->Form->input('gender', array('type' => 'select', 'empty' => true, 'options' => array('B' => 'Brother','S' => 'Sister'),'default' => null));?></td>
+            </tr>
+            <tr>
+                <td></td>
+		<td><?php echo $this->Form->input('cell_phone',array('label' => 'Cell Phone (XXX-XXX-XXXX)'));?></td>
+		<td><?php echo $this->Form->input('email');?></td>
+            </tr>
+            <tr>
+                <td></td>
+		<td><?php echo $this->Form->input('status_id', array('label' => 'Current Status','empty' => true, 'default' => null));?></td>
+		<td colspan="2"><?php echo $this->Form->input('campus_id', array('empty' => true, 'default' => null));?></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><?php echo $this->Form->input('locality_id',array('empty' => true,'default' => null));?></td>
+            </tr>
+            <tr>
+                <td></td>
+		<td colspan="3"><?php echo $this->Form->input('comment');?></td>
+            </tr>
+        </table>
+    </fieldset>
+    <fieldset>
+        <legend><?php echo __('Registration Type');?><hr width="500"></legend>
+        <table>
+            <tr>
+                <td width=25></td>
+                <td colspan=3>
+                    <?php echo $this->Form->radio('reg_type',array(
+                        'ft_lodging' => 'Full time with lodging'.$this->Form->input('lodging_id',array('label' => '&emsp;&emsp;&emsp; Lodging','empty' => true,'default' => null,'style' => "margin-left: 3em")),
+                        'ft_nolodging' => 'Full time, no lodging',
+                        'sat_only' => 'Saturday only (3 meetings, 2 meals, booklet, water bottle)',
+                        'pt' => 'Other:'
+                    ),
+                    array('legend' => false,'style' => "margin: 4px 15px 0px 0px"));?>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td width=50></td>
+                <td><h3>Meetings:</h3></td>
+                <td><h3>Meals:</h3></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td style="padding-left: 2em">
+                    <?php echo $this->Form->input('pt_meetings',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('fri' => 'Friday night','satm' => 'Saturday morning','sata' => 'Saturday afternoon','satn' => 'Saturday night','ld' => 'LD morning'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
+                </td>
+                <td style="padding-left: 2em">
+                    <?php echo $this->Form->input('pt_meals',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('fri' => 'Friday dinner','satb' => 'Saturday breakfast','satl' => 'Saturday lunch','satd' => 'Saturday dinner','ldb' => 'LD breakfast','ldl' => 'LD lunch'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td><h3>Miscellaneous:</h3></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td style="padding-left: 2em">
+                    <?php echo $this->Form->input('pt_misc',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('book' => 'Outline booklet','water' => 'Water bottle'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
+                </td>
+            </tr>
+        </table>
+    </fieldset>
+<?php echo $this->Form->end('Submit'); ?>
 </div>

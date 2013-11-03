@@ -37,22 +37,66 @@ class CancelsController extends AppController {
  *
  * @return void
  */
-	public function add() {
-		if ($this->request->is('post')) {
-			$this->Cancel->create();
-			if ($this->Cancel->save($this->request->data)) {
-				$this->Session->setFlash(__('The cancel has been saved'));
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(__('The cancel could not be saved. Please, try again.'));
-			}
-		}
-		$attendees = $this->Cancel->Attendee->find('list');
-		$conferences = $this->Cancel->Conference->find('list');
-		$creators = $this->Cancel->Creator->find('list');
-		$modifiers = $this->Cancel->Modifier->find('list');
-		$this->set(compact('attendees', 'conferences', 'creators', 'modifiers'));
-	}
+
+	public function add($attendee_id = null) {
+            $messages = array(
+                'Registered' => true,
+                'Checked in and canceled' => array(
+                    'type' => 'failure',
+                    'message' => 'The attendee '.$attendee['Attendee']['name'].' has already been checked in.'
+                ),
+                'Checked in' => array(
+                    'type' => 'failure',
+                    'message' => 'The attendee '.$attendee['Attendee']['name'].' has already been checked in.'
+                ),
+                'Canceled' => array(
+                    'type' => 'warning',
+                    'message' => 'The attendee '.$attendee['Attendee']['name'].' is already canceled. Edit the existing cancellation entry <a href="'.Router::url(array('controller' => 'cancel','action' => 'edit',$attendee['Cancel']['id']),false).'">here</a>.',
+                ),
+                'Not registered' => array(
+                    'type' => 'failure',
+                    'message' => 'Attendee not found'
+                ),
+            );
+            if (!empty($attendee_id)) {
+                $status = $this->Cancel->Attendee->get_status($attendee_id);
+                if ($messages[$status] === true) {
+                    $attendee = $this->Cancel->Attendee->find('first',array('conditions' => array('Attendee.id' => $attendee_id)));
+                } else {
+                    $this->Session->setFlash(__($messages[$status]['message']),$messages[$status]['type']);
+                    $this->redirect($this->referer());
+                }
+            }
+            if ($this->request->is('post')) {
+                $this->request->data['Cancel']['replaced'] = ucwords($this->request->data['Cancel']['replaced']);
+                
+                $barcode = array(
+                    'conference' => substr($this->request->data['Cancel']['barcode'],0,3),
+                    'attendee_id' => substr($this->request->data['Cancel']['barcode'],3,4),
+                );
+                $conference = $this->Cancel->Conference->find('first',array('conditions' => array('Conference.id' => $this->Cancel->Conference->current_conference()),'recursive' => -1));
+                $status = 'Not registered';
+                if ($conference['Conference']['code'] == $barcode['conference']) {
+                    $status = $this->Cancel->Attendee->get_status($barcode['attendee_id']);
+                    $attendee = $this->Cancel->Attendee->find('first',array('conditions' => array('Attendee.id' => $barcode['attendee_id']),'contain' => array('Lodging'),'recursive' => -1));
+                }
+                if ($messages[$status] === true) {
+                    $this->Cancel->create();
+                    $this->request->data['Cancel']['attendee_id'] = $attendee['Attendee']['id'];
+                    $this->request->data['Attendee']['Lodging']['attendee_count'] = $attendee['Lodging']['attendee_count'] - 1;
+                    if ($this->Cancel->save($this->request->data)) {
+                        $this->Session->setFlash(__('The attendee '.$attendee['Attendee']['name'].' has been canceled'),'success');
+                    } else {
+                        $this->Session->setFlash(__('The attendee '.$attendee['Attendee']['name'].' could not be canceled. Please, try again.'),'failure');
+                    }
+                } else {
+                    $this->Session->setFlash(__($messages[$status]['message']),$messages[$status]['type']);
+                    $this->redirect($this->referer());
+                }
+            }
+            $conferences = $this->Cancel->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Cancel->Attendee->Conference->current_conference())));
+            $this->set(compact('attendee','conferences'));
+        }
 
 /**
  * edit method

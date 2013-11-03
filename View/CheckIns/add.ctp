@@ -1,20 +1,29 @@
-<div class="checkIns form">
-<?php echo $this->Form->create('CheckIn'); ?>
-	<fieldset>
-		<legend><?php echo __('Add Check In'); ?></legend>
-	<?php
-		echo $this->Form->input('attendee_id');
-		echo $this->Form->input('timestamp');
-	?>
-	</fieldset>
-<?php echo $this->Form->end(__('Submit')); ?>
-</div>
-<div class="actions">
-	<h3><?php echo __('Actions'); ?></h3>
-	<ul>
+<?php $barcodeLength = 7;?>
 
-		<li><?php echo $this->Html->link(__('List Check Ins'), array('action' => 'index')); ?></li>
-		<li><?php echo $this->Html->link(__('List Attendees'), array('controller' => 'attendees', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Attendee'), array('controller' => 'attendees', 'action' => 'add')); ?> </li>
-	</ul>
+<div class="content">
+<?php echo $this->Form->create('CheckIn');?>
+    <fieldset>
+        <legend><?php echo __('Check In Attendee'); ?></legend>
+            <?php echo $this->Form->input('barcode', array('readonly','yes')); ?>
+	</fieldset>
+    <?php echo $this->Form->end(__('Check In'));?>
 </div>
+<?php   
+        echo $this->Html->scriptBlock('
+            var barcodetext = \'\';
+            $(window).keypress(function(e){
+                var intKey = (window.Event) ? e.which : e.keyCode;//fix for firefox
+                barcodetext += String.fromCharCode(intKey);
+                $(\'input[name="data[CheckIn][barcode]"]\').val(barcodetext);
+                if (barcodetext.length == '.$barcodeLength.')
+                { 
+                    //alert(barcodetext);
+                    $("form").submit();
+                    $(\'input[name="data[CheckIn][barcode]"]\').val(\'\');
+                    barcodetext = \'\';
+                }
+            });');
+        
+        //$this->Js->event('keypress', '$(\'input[name="data[Attendee][id]"]\').val(\'\');')
+        echo $this->Js->writeBuffer();
+?>

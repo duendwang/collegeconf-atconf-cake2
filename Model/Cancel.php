@@ -17,7 +17,7 @@ class Cancel extends AppModel {
  */
         public $contain = array(
             'Attendee' => array(
-                'fields' => array('Attendee.name'),
+                'fields' => array('Attendee.name','Attendee.gender'),
                 'Locality' => array(
                     'fields' => array('Locality.name')
                 )
@@ -31,10 +31,12 @@ class Cancel extends AppModel {
  */
 
         public function beforeSave($options = array()) {
-            if (empty($this->data[$this->alias]['id'])) {
-                $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
-            } else {
-                $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+            if (!empty($_SESSION['Auth']['User'])) {
+                if (empty($this->data[$this->alias]['id'])) {
+                    $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
+                } else {
+                    $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+                }
             }
             return true;
         }

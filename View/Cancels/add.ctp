@@ -1,29 +1,38 @@
-<div class="cancels form">
-<?php echo $this->Form->create('Cancel'); ?>
-	<fieldset>
-		<legend><?php echo __('Add Cancel'); ?></legend>
-	<?php
-		echo $this->Form->input('attendee_id');
-		echo $this->Form->input('conference_id');
-		echo $this->Form->input('reason');
-		echo $this->Form->input('replaced');
-		echo $this->Form->input('comment');
-		echo $this->Form->input('creator_id');
-		echo $this->Form->input('modifier_id');
-	?>
-	</fieldset>
-<?php echo $this->Form->end(__('Submit')); ?>
-</div>
-<div class="actions">
-	<h3><?php echo __('Actions'); ?></h3>
-	<ul>
+<?php $barcodeLength = 7;?>
 
-		<li><?php echo $this->Html->link(__('List Cancels'), array('action' => 'index')); ?></li>
-		<li><?php echo $this->Html->link(__('List Attendees'), array('controller' => 'attendees', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Attendee'), array('controller' => 'attendees', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Conferences'), array('controller' => 'conferences', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Conference'), array('controller' => 'conferences', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Users'), array('controller' => 'users', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Creator'), array('controller' => 'users', 'action' => 'add')); ?> </li>
-	</ul>
+<div class="content">
+    <?php echo $this->Form->create('Cancel');?>
+    <fieldset>
+        <?php if (!empty($attendee)) { ?>
+            <legend><?php echo __('Cancel '.$attendee['Attendee']['name']); ?></legend>
+        <?php } else { ?>
+            <legend><?php echo __('Cancel Attendee'); ?></legend>
+            <?php echo '<h3>If you need to scan a barcode, you may scan the barcode when you get to the Barcode field.</h3>';
+            echo $this->Form->input('barcode');
+        }   
+        echo $this->Form->input('conference_id',array('hidden' => true,'label' => false,'div' => false));
+        echo $this->Form->input('reason');
+        echo $this->Form->input('replaced',array('label' => 'Replaced By'));
+	?>
+    </fieldset>
+<?php echo $this->Form->end(__('Submit'));?>
 </div>
+<?php /**  
+        echo $this->Html->scriptBlock('
+            var barcodetext = \'\';
+            $(window).keypress(function(e){
+                var intKey = (window.Event) ? e.which : e.keyCode;//fix for firefox
+                barcodetext += String.fromCharCode(intKey);
+                $(\'input[name="data[CheckIn][barcode]"]\').val(barcodetext);
+                if (barcodetext.length == '.$barcodeLength.')
+                { 
+                    //alert(barcodetext);
+                    $("form").submit();
+                    $(\'input[name="data[CheckIn][barcode]"]\').val(\'\');
+                    barcodetext = \'\';
+                }
+            });');
+        
+        //$this->Js->event('keypress', '$(\'input[name="data[Attendee][id]"]\').val(\'\');')
+        echo $this->Js->writeBuffer();
+**/ ?>

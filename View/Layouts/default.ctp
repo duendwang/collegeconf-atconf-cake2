@@ -45,17 +45,18 @@
 		<div id="header">
                     <table>
                         <tr>
-                            <td><h1><?php if(!empty($User)) echo $this->Html->link(__('College Conference Registration'), array('controller' => 'pages','action' => 'display','home'));
+                            <td><h1><?php if(!empty($user)) echo $this->Html->link(__('College Conference Registration'), array('controller' => 'pages','action' => 'display','home'));
                                             else echo $this->Html->link(__('College Conference Registration'), array('controller' => 'pages', 'action' => 'display','registration')); ?></h1></td>
-                            <?php if(!empty($User)) {?>
-                            <td align="right" style="text-align:center; font-size:10"><h1><?php
+                            <?php if(!empty($user)) {?>
+                            <td align="right" style="text-align:right; font-size:10"><h1><?php
                                 echo 'Hello, ';
-                                    if(strlen($User['first_name']) > 0) {
-                                        echo $User['first_name'], ' ', $User['last_name'];
+                                    if(strlen($user['first_name']) > 0) {
+                                        echo $user['first_name'], ' ', $user['last_name'];
                                     } else{
-                                        echo 'church in ', $User['Locality']['city'];
+                                        echo 'church in ', $user['Locality']['name'];
                                     }
-                                    echo '. (', $this->Html->link('logout', '/users/logout'), ')';?>
+                                    echo '. (', $this->Html->link('logout', '/users/logout'), ', '.
+                                    $this->Html->link('help',$link).')';?>
                                 </h1>
                             </td>
                             <?php }?>

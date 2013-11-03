@@ -22,10 +22,12 @@ class Email extends AppModel {
  */
 
         public function beforeSave($options = array()) {
-            if (empty($this->data[$this->alias]['id'])) {
-                $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
-            } else {
-                $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+            if (!empty($_SESSION['Auth']['User'])) {
+                if (empty($this->data[$this->alias]['id'])) {
+                    $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
+                } else {
+                    $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+                }
             }
             return true;
         }

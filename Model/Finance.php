@@ -66,10 +66,12 @@ class Finance extends AppModel {
  */
 
         public function beforeSave($options = array()) {
-            if (empty($this->data[$this->alias]['id'])) {
-                $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
-            } else {
-                $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+            if (!empty($_SESSION['Auth']['User'])) {
+                if (empty($this->data[$this->alias]['id'])) {
+                    $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
+                } else {
+                    $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+                }
             }
             
             if ($this->data[$this->alias]['charge'] == null || $this->data[$this->alias]['charge'] == 0) $this->data[$this->alias]['charge'] = $this->data[$this->alias]['count'] * $this->data[$this->alias]['rate']*(-1);
@@ -86,7 +88,7 @@ class Finance extends AppModel {
 		'conference_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
-				//'message' => 'Your custom message here',
+				'message' => 'Conference required',
 				'allowEmpty' => false,
 				'required' => true,
 				//'last' => false, // Stop validation after this rule
@@ -96,7 +98,7 @@ class Finance extends AppModel {
 		'receive_date' => array(
 			'date' => array(
 				'rule' => array('date'),
-				//'message' => 'Your custom message here',
+				'message' => 'Required',
 				'allowEmpty' => false,
 				'required' => true,
 				//'last' => false, // Stop validation after this rule
@@ -106,7 +108,7 @@ class Finance extends AppModel {
 		'locality_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
-				//'message' => 'Your custom message here',
+				'message' => 'Required',
 				'allowEmpty' => false,
 				'required' => true,
 				//'last' => false, // Stop validation after this rule
@@ -116,13 +118,14 @@ class Finance extends AppModel {
 		'finance_type_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
-				//'message' => 'Your custom message here',
+				'message' => 'Required',
 				'allowEmpty' => false,
 				'required' => true,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
+                //TODO set up custom validation for count and rate: depend on each other
 		'count' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),

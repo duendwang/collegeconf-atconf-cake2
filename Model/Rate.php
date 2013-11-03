@@ -40,9 +40,25 @@ class Rate extends AppModel {
                         $rates['serving']['cost'] = $rate['Rate']['cost'];
                         $rates['serving']['latefee_applies'] = $rate['Rate']['latefee_applies'];
                         break;
+                    case 7:
+                        $rates['sat_only']['cost'] = $rate['Rate']['cost'];
+                        $rates['sat_only']['latefee_applies'] = $rate['Rate']['latefee_applies'];
+                        break;
                     case 8:
                         $rates['late_fee']['cost'] = $rate['Rate']['cost'];
                         $rates['late_fee']['latefee_applies'] = $rate['Rate']['latefee_applies'];
+                        break;
+                    case 9:
+                        $rates['meal']['cost'] = $rate['Rate']['cost'];
+                        $rates['meal']['latefee_applies'] = $rate['Rate']['latefee_applies'];
+                        break;
+                    case 10:
+                        $rates['booklet']['cost'] = $rate['Rate']['cost'];
+                        $rates['booklet']['latefee_applies'] = $rate['Rate']['latefee_applies'];
+                        break;
+                    case 11:
+                        $rates['water']['cost'] = $rate['Rate']['cost'];
+                        $rates['water']['latefee_applies'] = $rate['Rate']['latefee_applies'];
                         break;
                 }
             endforeach;

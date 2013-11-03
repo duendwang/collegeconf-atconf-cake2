@@ -51,13 +51,9 @@ class AppController extends Controller {
     
     public function beforeRender() {
         if($this->Auth->loggedIn()) {
-            debug($this->request);
-            debug($_SERVER);
-            exit;
-            $this->loadModel('Conference');
-            $link = 'http://wiki.college-conference.com/'.strtolower($this->theme).'/index.php?title='.ucwords($this->request->params['controller']).':'.ucwords($this->request->params['action']);
+            $link = 'http://'.$_SERVER['HTTP_HOST'].'/wiki/'.'index.php?title='.ucwords($this->request->params['controller']).':'.ucwords($this->request->params['action']);
             $user = $this->Auth->user();
-            $this->set(compact('user','link','selected_conference'));
+            $this->set(compact('user','link'));
         }
     }
     

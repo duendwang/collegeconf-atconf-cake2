@@ -49,7 +49,7 @@ class Attendee extends AppModel {
 
         public $filterArgs = array(
                 array('name' => 'name', 'type' => 'query', 'method' => 'filterName'),
-                array('name' => 'locality', 'type' => 'query', 'field' => 'Locality.city', 'method' => 'filterLocality')
+                array('name' => 'locality', 'type' => 'query', 'field' => 'Locality.name', 'method' => 'filterLocality')
         );
         
         public function filterName($data, $field = null){
@@ -72,7 +72,7 @@ class Attendee extends AppModel {
             }
             $locality = '%' . $data['locality'] . '%';
             return array (
-                    'Locality.city LIKE' => $locality
+                    'Locality.name LIKE' => $locality
             );
         }
 
@@ -94,12 +94,36 @@ class Attendee extends AppModel {
  */
 
         public function beforeSave($options = array()) {
-            if (empty($this->data[$this->alias]['id'])) {
-                $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
-            } else {
-                $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+            if (!empty($_SESSION['Auth']['User'])) {
+                if (empty($this->data[$this->alias]['id'])) {
+                    $this->data[$this->alias]['creator_id'] = $_SESSION['Auth']['User']['id'];
+                } else {
+                    $this->data[$this->alias]['modifier_id'] = $_SESSION['Auth']['User']['id'];
+                }
             }
             return true;
+        }
+        
+/*
+ * getStatus method
+ * 
+ * @return string
+ */
+        public function get_status($id) {
+            if($attendee = $this->find('first',array('conditions' => array('Attendee.id' => $id)))) {
+                if ($attendee['Attendee']['check_in_count'] == 1 && $attendee['Attendee']['cancel_count'] == 1) {
+                    $status = 'Checked in and canceled';
+                } elseif ($attendee['Attendee']['check_in_count'] == 1) {
+                    $status = 'Checked in';
+                } elseif ($attendee['Attendee']['cancel_count'] == 1) {
+                    $status = 'Canceled';
+                } else {
+                    $status = 'Registered';
+                }
+            } else {
+                $status = 'Not registered';
+            }
+            return $status;
         }
 
 /**
@@ -128,7 +152,7 @@ class Attendee extends AppModel {
 		'first_name' => array(
 			'alpha' => array(
 				'rule' => '/^[a-z\s]+$/i', //TODO copy to all first and last name fields
-				'message' => 'Required to save. Letters only.',
+				'message' => 'Required. Letters only.',
 				'allowEmpty' => false,
 				'required' => true,
 				//'last' => false, // Stop validation after this rule
@@ -138,7 +162,7 @@ class Attendee extends AppModel {
 		'last_name' => array(
 			'alpha' => array(
 				'rule' => '/^[a-z\s]+$/i',
-				'message' => 'Required to save. Letters only.',
+				'message' => 'Required. Letters only.',
 				'allowEmpty' => false,
 				'required' => true,
 				//'last' => false, // Stop validation after this rule
@@ -148,9 +172,9 @@ class Attendee extends AppModel {
 		'gender' => array(
 			'inlist' => array(
 				'rule' => array('inlist',array('B','S')),
-				'message' => 'B or S',
-				'allowEmpty' => true,
-				//'required' => false,
+				'message' => 'Required',
+				'allowEmpty' => false,
+				'required' => true,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
@@ -166,17 +190,18 @@ class Attendee extends AppModel {
 		'locality_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
-				//'message' => 'Your custom message here',
+				'message' => 'Locality must be selected',
 				'allowEmpty' => false,
 				'required' => true,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
+                //TODO customize with validation function
 		'campus_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
-				//'message' => 'Your custom message here',
+				//'message' => 'Campus must be selected',
 				'allowEmpty' => true,
 				'required' => false,
 				//'last' => false, // Stop validation after this rule
@@ -244,9 +269,9 @@ class Attendee extends AppModel {
 		'status_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
-				//'message' => 'Your custom message here',
-				'allowEmpty' => true,
-				'required' => false,
+				'message' => 'Required',
+				'allowEmpty' => false,
+				'required' => true,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
@@ -255,8 +280,8 @@ class Attendee extends AppModel {
 			'phone' => array(
 				'rule' => array('phone',null,'us'),
 				'message' => 'Invalid US phone #',
-				'allowEmpty' => true,
-				'required' => false,
+				'allowEmpty' => false,
+				'required' => true,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
@@ -264,9 +289,9 @@ class Attendee extends AppModel {
 		'email' => array(
 			'email' => array(
 				'rule' => array('email'),
-				//'message' => 'Your custom message here',
-				'allowEmpty' => true,
-				'required' => false,
+				'message' => 'Required',
+				'allowEmpty' => false,
+				'required' => true,
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
