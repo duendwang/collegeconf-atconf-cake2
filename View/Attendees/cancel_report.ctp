@@ -1,0 +1,44 @@
+<div class="content">
+    <h2><?php echo __('Canceled Attendees'); ?></h2><br>
+        <?php /**<p>In <a href="http://registration.sccs.lan/phpmyadmin">phpmyadmin</a>, export the attendees, checkins, and localities tables as an Excel file.</p>
+        <p>Open the exported file.</p>
+        <p>Rename the attendees, checkins, and localities sheets to 'attendees', 'checkins', and 'localities' respectively.</p>
+        <p>Create a new Locality column to the right of locality_id and perform a vlookup to display the locality name (=vlookup(xx,localities!A:B,2,false))</p>
+        <p>Sort the checkin table by attendee_id in ascending order.</p>
+        <p>Create a new Check In column to the right of all the data and perform a vlookup to display check-in information (=vlookup(xx.checkins!B:C,2,false))</p>
+        <p>Filter out or delete all attendees that either have a null value in the 'cancel' column or have an entry in the Check In column.</p>
+        <p>Further filter out or delete any attendees who were replaced by another as indicated in the comment column.</p>
+        <p>Hide the necessary columns so that only the locality, first and last name, gender, rate, cancel, and cancel_reason fields are displayed.</p>
+        <p>To the far right, add a Comments column. This is different from the original comment column that should be hidden.</p>
+        <p>Add an appropriate page header and format the document so that it displays properly on one page. Print the document for the brothers.</p>
+        **/?>
+        
+    <table cellpadding="0" cellspacing="0">
+        <tr>
+            <th><?php echo $this->Paginator->sort('locality_id'); ?></th>
+            <th><?php echo $this->Paginator->sort('first_name'); ?></th>
+            <th><?php echo $this->Paginator->sort('last_name'); ?></th>
+            <th><?php echo $this->Paginator->sort('gender'); ?></th>
+            <th><?php echo $this->Paginator->sort('rate'); ?></th>
+            <th><?php echo $this->Paginator->sort('Cancel.created','Cancelled'); ?></th>
+            <th><?php echo $this->Paginator->sort('Cancel.reason','Reason'); ?></th>
+            <?php /**<th class="actions"><?php echo __('Actions'); ?></th>**/?>
+	</tr>
+    <?php foreach ($cancellations as $cancellation): ?>
+	<tr>
+            <td><?php echo h($cancellation['Locality']['name']); ?>&nbsp;</td>
+            <td><?php echo h($cancellation['Attendee']['first_name']); ?>&nbsp;</td>
+            <td><?php echo h($cancellation['Attendee']['last_name']); ?>&nbsp;</td>
+            <td><?php echo h($cancellation['Attendee']['gender']); ?>&nbsp;</td>
+            <td><?php echo h($cancellation['Attendee']['rate']); ?>&nbsp;</td>
+            <td><?php echo h($cancellation['Cancel']['created']); ?>&nbsp;</td>
+            <td><?php echo h($cancellation['Cancel']['reason']); ?>&nbsp;</td>
+            <?php /** <td class="actions">
+                <?php echo $this->Html->link(__('View'), array('action' => 'view', $attendee['Attendee']['id'])); ?>
+		<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $attendee['Attendee']['id'])); ?>
+		<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $attendee['Attendee']['id']), null, __('Are you sure you want to delete # %s?', $attendee['Attendee']['id'])); ?>
+            </td>**/?>
+	</tr>
+<?php endforeach; ?>
+    </table>
+</div>
