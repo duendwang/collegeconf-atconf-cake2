@@ -66,41 +66,42 @@ class FinancesController extends AppController {
                 $this->Finance->recursive = 0;
                 if(isset($locality)) {
                     $this->paginate = array(
-                        'conditions' => array('Finance.conference_id' => $this->Session->read('Conference.selected'),'Finance.locality_id =' => $locality),
+                        'conditions' => array('Finance.locality_id =' => $locality),
                         'contain' => $this->Finance->contain,
                         'order' => array('Finance.receive_date' => 'asc'),
                     );
-                    $this->set('totals',$this->Finance->find('all',array('conditions' => array('Finance.conference_id' => $this->Session->read('Conference.selected'),'Finance.locality_id' => $locality),'fields' => array('Finance.conference_id','sum(count) as total_count','sum(charge) as total_charge','sum(payment) as total_payment','sum(balance) as total_balance'),'recursive' => 2)));
+                    $locality = $this->Finance->Locality->find('first',array('conditions' => array('Locality.id' => $locality),'recursive' => 0));
+                    $this->set('totals',$this->Finance->find('all',array('conditions' => array('Finance.locality_id' => $locality['Locality']['id']),'fields' => array('Finance.conference_id','Locality.name','sum(count) as total_count','sum(charge) as total_charge','sum(payment) as total_payment','sum(balance) as total_balance'),'recursive' => 2)));
                 } else {
                     $this->redirect(array('action' => 'index'));
                 }
 
                 $finances = $this->paginate();
                 foreach ($finances as &$finance):
-                    if(true) {
-                    //if($finance['Finance']['finance_type_id'] !== '1' || strpos($finance['Finance']['comment'],'No lodging') !== false || strpos($finance['Finance']['comment'],'Nurse') !== false) {
+                    if($finance['Finance']['finance_type_id'] !== '1' || strpos($finance['Finance']['comment'],'No lodging') !== false || strpos($finance['Finance']['comment'],'Nurse') !== false) {
                         $finance_comment = ' ';
                         foreach ($finance['FinanceAttendee'] as $finance_attendee):
                             if (!empty($finance_attendee['AddAttendee']) && !empty($finance_attendee['CancelAttendee'])) {
                                 $finance_comment = $finance_comment.
                                         $finance_attendee['AddAttendee']['name'].
                                         ' for '.
-                                        $finance_attendee['CancelAttendee']['name'];
+                                        $finance_attendee['CancelAttendee']['name'].
+                                        ', ';
                             } elseif (!empty($finance_attendee['AddAttendee'])) {
                                 $finance_comment = $finance_comment.
                                         $finance_attendee['AddAttendee']['name'].
-                                        ',';
+                                        ', ';
                             } elseif (!empty($finance_attendee['CancelAttendee'])) {
                                 $finance_comment = $finance_comment.
                                         $finance_attendee['CancelAttendee']['name'].
-                                        ',';
+                                        ', ';
                             }
                         endforeach;
-                        $finance_comment = substr($finance_comment,0,-1);
+                        $finance_comment = substr($finance_comment,0,-2);
                         $finance['Finance']['comment'] = $finance['Finance']['comment'].$finance_comment;
                     }
                 endforeach;
-                $this->set(compact('finances'));
+                $this->set(compact('finances','locality'));
 	}
 
 /**
@@ -118,7 +119,7 @@ class FinancesController extends AppController {
                     'SUM(Finance.charge) as "total charge"',
                     'SUM(Finance.payment) as "total payment"',
                     'SUM(Finance.balance) as "balance"'),
-                'order' => array('Finance.locality_id' => 'asc'),
+                'order' => array('Locality.name' => 'asc'),
                 'group' => array('Finance.locality_id')
                 );
             /**$report_entries = $this->Finance->query("SELECT city,

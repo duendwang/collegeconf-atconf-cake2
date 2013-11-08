@@ -38,7 +38,7 @@ class CheckInsController extends AppController {
  * @param string $id
  * @return void
  */
-	public function add($id = null) {
+	public function add($attendee_id = null) {
             $messages = array(
                 'Registered' => true,
                 'Checked in and canceled' => array(
@@ -79,7 +79,10 @@ class CheckInsController extends AppController {
             if (!empty($status)) {
                 if ($messages[$status] === true) {
                     $this->CheckIn->create();
-                    $this->request->data['CheckIn']['attendee_id'] = $barcode['attendee_id'];
+                    $this->request->data['CheckIn'] = array(
+                        'attendee_id' => $attendee['Attendee']['id'],
+                        'timestamp' => '',
+                    );
                     if ($this->CheckIn->save($this->request->data)) {
                         $this->Session->setFlash(__('The attendee '.$attendee['Attendee']['first_name'].' '.$attendee['Attendee']['last_name'].' has been checked in'),'success');
                         $this->redirect($this->referer());

@@ -62,6 +62,7 @@ class CancelsController extends AppController {
                 $status = $this->Cancel->Attendee->get_status($attendee_id);
                 if ($messages[$status] === true) {
                     $attendee = $this->Cancel->Attendee->find('first',array('conditions' => array('Attendee.id' => $attendee_id)));
+                    $referer = $this->referer();
                 } else {
                     $this->Session->setFlash(__($messages[$status]['message']),$messages[$status]['type']);
                     $this->redirect($this->referer());
@@ -86,16 +87,17 @@ class CancelsController extends AppController {
                     $this->request->data['Attendee']['Lodging']['attendee_count'] = $attendee['Lodging']['attendee_count'] - 1;
                     if ($this->Cancel->save($this->request->data)) {
                         $this->Session->setFlash(__('The attendee '.$attendee['Attendee']['name'].' has been canceled'),'success');
+                        $this->redirect($this->request->data['Referer']['url']);
                     } else {
                         $this->Session->setFlash(__('The attendee '.$attendee['Attendee']['name'].' could not be canceled. Please, try again.'),'failure');
                     }
                 } else {
                     $this->Session->setFlash(__($messages[$status]['message']),$messages[$status]['type']);
-                    $this->redirect($this->referer());
+                    $this->redirect($this->request->data['Referer']['url']);
                 }
             }
             $conferences = $this->Cancel->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Cancel->Attendee->Conference->current_conference())));
-            $this->set(compact('attendee','conferences'));
+            $this->set(compact('attendee','conferences','referer'));
         }
 
 /**

@@ -78,7 +78,7 @@
 		</dd>
 	</dl>
 </div>
-<div class="actions">
+<?php /**<div class="actions">
 	<h3><?php echo __('Actions'); ?></h3>
 	<ul>
 		<li><?php echo $this->Html->link(__('Edit Lodging'), array('action' => 'edit', $lodging['Lodging']['id'])); ?> </li>
@@ -92,7 +92,7 @@
 		<li><?php echo $this->Html->link(__('List Attendees'), array('controller' => 'attendees', 'action' => 'index')); ?> </li>
 		<li><?php echo $this->Html->link(__('New Attendee'), array('controller' => 'attendees', 'action' => 'add')); ?> </li>
 	</ul>
-</div>
+</div>**/?>
 <div class="related">
 	<h3><?php echo __('Related Attendees'); ?></h3>
 	<?php if (!empty($lodging['Attendee'])): ?>
@@ -169,10 +169,4 @@
 	<?php endforeach; ?>
 	</table>
 <?php endif; ?>
-
-	<div class="actions">
-		<ul>
-			<li><?php echo $this->Html->link(__('New Attendee'), array('controller' => 'attendees', 'action' => 'add')); ?> </li>
-		</ul>
-	</div>
 </div>

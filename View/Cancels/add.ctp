@@ -5,6 +5,8 @@
     <fieldset>
         <?php if (!empty($attendee)) { ?>
             <legend><?php echo __('Cancel '.$attendee['Attendee']['name']); ?></legend>
+            <?php echo $this->Form->hidden('barcode',array('default' => $attendee['Conference']['code'].$attendee['Attendee']['id']));
+            echo $this->Form->hidden('Referer.url',array('default' => $referer));?>
         <?php } else { ?>
             <legend><?php echo __('Cancel Attendee'); ?></legend>
             <?php echo '<h3>If you need to scan a barcode, you may scan the barcode when you get to the Barcode field.</h3>';

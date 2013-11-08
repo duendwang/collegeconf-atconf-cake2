@@ -1,16 +1,10 @@
 <div class="content">
-	<h2><?php echo __('Finance Final Summary'); ?></h2>
-        <h4 style="font-size: 130%"><?php echo __('Your Localities');?></h4>
-        <h4 style="font-size: 100%; color:#fff"><?php
-        foreach ($localities as $locality):
-            echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$this->Html->link($locality['Locality']['name'],array('action' => 'summary',$locality['Locality']['id'])) . '<br>';
-        endforeach;?></h4>
-        <br><?php echo $this->Html->link('View Registration Summary',array('controller' => 'attendees','action' => 'summary'));?><br><br>
-        <?php //print_r($localities); ?>
+	<h2><?php echo __($locality['Locality']['name'].' Finances'); ?></h2>
+        <br><?php echo $this->Html->link('View '.$locality['Locality']['name'].' Attendees',array('controller' => 'attendees','action' => 'report',$locality['Locality']['id']));?><br><br>
         <table cellpadding="0" cellspacing="0">
 	<tr>
 			<th><?php echo $this->Paginator->sort('receive_date'); ?></th>
-			<th><?php echo $this->Paginator->sort('locality_id'); ?></th>
+			<th><?php echo $this->Paginator->sort('Locality.name'); ?></th>
 			<th><?php echo $this->Paginator->sort('FinanceType.name'); ?></th>
 			<th><?php echo $this->Paginator->sort('count'); ?></th>
 			<th><?php echo $this->Paginator->sort('rate'); ?></th>

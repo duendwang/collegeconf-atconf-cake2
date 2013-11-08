@@ -28,11 +28,11 @@
 		<p><?php echo $this->Html->link(__('Add new attendee'), array('controller' => 'attendees', 'action' => 'add')); ?></p>
 		<p><?php echo $this->Html->link(__('Cancel attendee'), array('controller' => 'cancels', 'action' => 'add')); ?></p>
                 <p><?php echo $this->Html->link(__('Enter finances'), array('controller' => 'finances', 'action' => 'add')); ?></p>
-		<p><?php echo $this->Html->link(__('Find open hospitality'), array('controller' => 'lodgings', 'action' => 'capacity')); ?></p>
-                <p><?php echo $this->Html->link(__('Badges'), array('controller' => 'onsiteRegistrations', 'action' => 'badges')); ?></p>
+		<p><?php echo $this->Html->link(__('View lodgings'), array('controller' => 'lodgings', 'action' => 'capacities')); ?></p>
+                <?php /**<p><?php echo $this->Html->link(__('Badges'), array('controller' => 'onsiteRegistrations', 'action' => 'badges')); ?></p>**/?>
                 <p><?php echo $this->Html->link(__('Cashier'), array('controller' => 'onsiteRegistrations', 'action' => 'cashier')); ?></p>
-                <p><?php echo $this->Html->link(__('CC Desk'), array('controller' => 'attendees', 'action' => 'cc_desk')); ?></p>
-		<p><?php echo $this->Html->link(__('Attendee self registration'), array('action' => 'display','registration')); ?></p>
+                <p><?php echo $this->Html->link(__('CC form processing'), array('controller' => 'attendees', 'action' => 'cc_desk')); ?></p>
+		<?php /**<p><?php echo $this->Html->link(__('Attendee self registration'), array('action' => 'display','registration')); ?></p>**/?>
             </td>
             <td style="padding-left:2em">
                 <p><?php echo $this->Html->link(__('Conference contacts'), array('controller' => 'attendees', 'action' => 'cc_report')); ?></p>

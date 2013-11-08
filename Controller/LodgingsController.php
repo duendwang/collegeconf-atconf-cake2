@@ -30,25 +30,25 @@ class LodgingsController extends AppController {
 	}
 
 /**
- * capacity method
+ * capacities method
  *
  * @return void
  */
-        public function capacity($id = null) {
-            $lodgings = $this->Lodging->find('all',array('recursive' => 0));
-            foreach ($lodgings as $lodging):
-                $attendee = $this->Lodging->Attendee->find('first',array('conditions' => array('Attendee.lodging_id' => $lodging['Lodging']['id']),'fields' => array('DISTINCT(Attendee.locality_id','Attendee.gender')));
-                debug($attendee);
-                exit;
-                $capacities[] = array(
-                    'house' => $lodging['Lodging']['name'],
-                    'room' => $lodging['Lodging']['room'],
-                    'openings' => $lodging['Lodging']['capacity'] - $this->Lodging->Attendee->find('count',array('conditions' => array('Attendee.lodging_id' => $lodging['Lodging']['id']))),
-                    'assigned_locality' => $attendee['Locality']['city'],
-                    'assigned_gender' => $attendee['Attendee']['gender'],
-                );
+        public function capacities() {
+            $this->Lodging->recursive = -1;
+            $this->paginate = array(
+                'contain' => $this->Lodging->contain,
+                'limit' => 100
+            );
+            $lodgings = $this->paginate();
+            foreach ($lodgings as &$lodging):
+                unset($localities);
+                foreach ($lodging['Attendee'] as $attendee):
+                    $localities[] = $attendee['Locality']['name'];
+                endforeach;
+                $lodging['Lodging']['localities'] = implode(', ',$localities);
             endforeach;
-            $this->set(compact('capacities'));
+            $this->set(compact('lodgings'));
         }
 
 /**

@@ -27,21 +27,91 @@ class AttendeesController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->Attendee->recursive = 0;
+                Configure::write('debug', 0);
+		$this->Attendee->recursive = -1;
+                $this->Prg->commonProcess();
+                if (!empty($this->Attendee->parseCriteria($this->passedArgs))) {
+                    $conditions = $this->Attendee->parseCriteria($this->passedArgs);
+                } elseif ($conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => -1))) {
+                    $conditions = array(
+                        'OR' => array(
+                            'Attendee.cancel_count' => 0,
+                            'Cancel.created >' => $conference['Conference']['start_date'],
+                        )
+                    );
+                } else {
+                    $conditions = array(
+                        'Attendee.cancel_count' => 0
+                    );
+                }
 		$this->paginate = array(
-                    'conditions' => $this->Attendee->parseCriteria($this->passedArgs),
+                    'conditions' => $conditions,
                     'contain' => $this->Attendee->contain,
-                    'limit' => 1500
+                    'limit' => 100
                 );
-		$this->set('attendees', $this->paginate());
+                //$attendees = $this->paginate();
+		$this->set('attendees',$this->paginate());
 	}
+
+/*
+ * report method
+ * 
+ * @return void
+ */
+        public function report($locality = null) {
+                $this->Attendee->recursive = 0;
+                $contain = array_merge($this->Attendee->contain,array(
+                    'AttendeeFinanceAdd' => array(
+                        'fields' => array(
+                            'AttendeeFinanceAdd.cancel_attendee_id'
+                        ),
+                        'CancelAttendee' => array(
+                            'fields' => 'CancelAttendee.name'
+                        )
+                    )
+                ));
+                
+                $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => 0));
+                
+                if(isset($locality)) {
+                    $this->paginate = array(
+                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('AND' => array('Attendee.cancel_count' => 1, 'Cancel.created >' => date('Y-m-d h:i:s',strtotime($conference['Conference']['start_date'])),'Cancel.replaced' => null),'Attendee.cancel_count' => 0)),
+                        'contain' => $contain,
+                        'limit' => 100,
+                    );
+                    $locality = $this->Attendee->Locality->find('first',array('conditions' => array('Locality.id' => $locality),'recursive' => 0));
+                } else {
+                    $this->redirect(array('action' => index));
+                }
+                
+                $attendees = $this->paginate();
+                foreach($attendees as &$attendee):
+                    $attendee['Attendee']['created'] = date('m/d/Y',strtotime($attendee['Attendee']['created']));
+                    if (!empty($attendee['Cancel']['created'])) {
+                        $attendee['Cancel']['created'] = date('m/d/Y',strtotime($attendee['Cancel']['created']));
+                    }
+                    if (!empty($attendee['Cancel']['replaced'])) {
+                        $attendee['Cancel']['reason'] = $attendee['Cancel']['reason'].'; Replaced by '.$attendee['Cancel']['replaced'];
+                    }
+                    if (!empty($attendee['AttendeeFinanceAdd'])) {
+                        foreach ($attendee['AttendeeFinanceAdd'] as &$attendee_finance):
+                            if (!empty($attendee_finance['cancel_attendee_id'])) {
+                                if (!empty($attendee['Attendee']['comment'])) {
+                                    $attendee['Attendee']['comment'] = $attendee['Attendee']['comment'].'; '.'Replacing '.$attendee_finance['CancelAttendee']['name'];
+                                } else $attendee['Attendee']['comment'] = 'Replacing '.$attendee_finance['CancelAttendee']['name'];
+                            }
+                        endforeach;
+                    }
+                endforeach;
+                $this->set(compact('attendees','locality'));
+        }
 
 /**
  * summary method
  *
  * @return void
  */
-	public function summary($locality = null) {
+	public function summary() {
                 $this->Attendee->recursive = 0;
                 $contain = array(
                     'Locality' => array(
@@ -51,7 +121,7 @@ class AttendeesController extends AppController {
                     )
                 );
                 
-                $summaries = $this->Attendee->find('all',array('contain' => $contain,'fields' => array('Attendee.locality_id','COUNT(Attendee.id) as count','SUM(rate) as total_charge'),'order' => array('Attendee.locality_id' => 'asc'),'group' => 'Attendee.locality_id'));
+                $summaries = $this->Attendee->find('all',array('contain' => $contain,'fields' => array('Attendee.locality_id','COUNT(Attendee.id) as count','SUM(rate) as total_charge'),'order' => array('Attendee.locality_id' => 'asc'),'group' => 'Attendee.locality_id','order' => 'Locality.name'));
                 $this->set(compact('summaries'));
 	}
 
@@ -67,14 +137,10 @@ class AttendeesController extends AppController {
 		$this->paginate = array(
                     'conditions' => array('Attendee.conf_contact' => 1),
                     'contain' => $this->Attendee->contain,
-                    'order' => array('Locality.city' => 'asc','Attendee.gender' => 'asc'),
+                    'order' => array('Locality.city' => 'asc','Locality.city' => 'asc'),
                     'limit' => 100,
-                    'recursive' => 0
                 );
                 $confcontacts = $this->paginate();
-                foreach ($confcontacts as &$cc):
-                    $cc['Attendee']['status'] = $this->Attendee->get_status($cc['Attendee']['id']);
-                endforeach;
 		$this->set(compact('confcontacts'));
 	}
 
@@ -85,14 +151,16 @@ class AttendeesController extends AppController {
  */
         public function cancel_report($no_show = false) {
             $this->Attendee->recursive = 0;
+            $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => -1));
             if ($no_show) {
-                $conditions = array('OR' => array('Attendee.cancel_count' => 1, 'Attendee.check_in_count' => 0));
+                $conditions = array('OR' => array('AND' =>array('Attendee.cancel_count' => 1,'Cancel.created >' => $conference['Conference']['start_date'],'Cancel.replaced' => null), 'AND' => array('Attendee.check_in_count' => 0,'Attendee.cancel_count' => 0)));
             } else {
-                $conditions = array('Attendee.cancel_count' => 1);
+                $conditions = array('Attendee.cancel_count' => 1,'Cancel.created >' => $conference['Conference']['start_date'],'Cancel.replaced' => null);
             }
             $this->paginate = array(
                 'conditions' => $conditions,
-                'order' => array('Locality.name' => 'asc')
+                'order' => array('Locality.name' => 'asc'),
+                'limit' => 50,
             );
             $this->set('cancellations',$this->paginate());
         }
@@ -103,16 +171,16 @@ class AttendeesController extends AppController {
  * @return void
  */
 	public function checkin_stats() {
-                $checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0)));
-                $high_school_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 1)));
-                $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5))));
-                $canceled_count = $this->Attendee->find('count',array('conditions' => array('Attendee.cancel_count >' => 0)));
-                $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0,'Attendee.cancel_count' => 0)));
-                
                 //Get conference start date
                 $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => -1));
                 $start_date = strtotime($conference['Conference']['start_date']);
 
+                $checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0)));
+                $high_school_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 1)));
+                $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5))));
+                $canceled_count = $this->Attendee->find('count',array('conditions' => array('Attendee.cancel_count >' => 0,'Cancel.created >' => $conference['Conference']['start_date'])));
+                $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0,'Attendee.cancel_count' => 0)));
+                
                 //Construct time breakdowns
                 $time_slots = array(
                     'FriPM' => array(

@@ -50,7 +50,7 @@
     <ul>
         <li><?php echo $this->Html->link(__('Edit Attendee'), array('action' => 'edit', $attendee['Attendee']['id'])); ?> </li>
 	<li><?php echo $this->Html->link(__('Check in Attendee'), array('controller' => 'check_ins', 'action' => 'add', $attendee['Attendee']['id'])); ?> </li>
-	<li><?php echo $this->Html->link(__('Cancel Attendee'), array('controller' => 'cancels', 'action' => 'edit', $attendee['Attendee']['id'])); ?> </li>
+	<li><?php echo $this->Html->link(__('Cancel Attendee'), array('controller' => 'cancels', 'action' => 'add', $attendee['Attendee']['id'])); ?> </li>
 	<li><?php echo $this->Html->link(__('New Payment'), array('controller' => 'payments', 'action' => 'add', $attendee['Attendee']['id'])); ?> </li>
         <li><?php echo $this->Html->link(__('New Finance'), array('controller' => 'finances', 'action' => 'add')); ?> </li>
 

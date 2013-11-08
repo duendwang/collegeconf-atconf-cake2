@@ -10,6 +10,20 @@ App::uses('AppModel', 'Model');
 class Lodging extends AppModel {
 
 /**
+ * contain
+ *
+ * @var array
+ */
+        public $contain = array(
+            'Attendee' => array(
+                'fields' => array('DISTINCT Attendee.locality_id','Attendee.gender'),
+                'Locality' => array(
+                    'fields' => 'Locality.name'
+                )
+            ),
+        );
+
+/**
  * Display field
  *
  * @var string

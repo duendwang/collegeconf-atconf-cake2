@@ -9,7 +9,7 @@
 	<?php
 	foreach ($summaries as $summary): ?>
 	<tr>
-            <td><?php echo $this->Html->link($summary['Locality']['name'],array('action' => 'report',$summary['Finance']['locality_id'])); ?>&nbsp;</td>
+            <td><?php echo $this->Html->link($summary['Locality']['name'],array('action' => 'report',$summary['Locality']['id'])); ?>&nbsp;</td>
             <td><?php echo h($summary[0]['count']); ?>&nbsp;</td>
             <td><?php echo h($summary[0]['total_charge']); ?>&nbsp;</td>
         </tr>
