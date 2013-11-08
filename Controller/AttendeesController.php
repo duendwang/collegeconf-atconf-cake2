@@ -27,10 +27,10 @@ class AttendeesController extends AppController {
  * @return void
  */
 	public function index() {
-                Configure::write('debug', 0);
+                //Configure::write('debug', 0);
 		$this->Attendee->recursive = -1;
                 $this->Prg->commonProcess();
-                if (!empty($this->Attendee->parseCriteria($this->passedArgs))) {
+                if ($this->Attendee->parseCriteria($this->passedArgs)) {
                     $conditions = $this->Attendee->parseCriteria($this->passedArgs);
                 } elseif ($conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => -1))) {
                     $conditions = array(
