@@ -33,11 +33,12 @@
             <td><?php echo h($cancellation['Attendee']['rate']); ?>&nbsp;</td>
             <td><?php echo h($cancellation['Cancel']['created']); ?>&nbsp;</td>
             <td><?php echo h($cancellation['Cancel']['reason']); ?>&nbsp;</td>
-            <?php /** <td class="actions">
-                <?php echo $this->Html->link(__('View'), array('action' => 'view', $attendee['Attendee']['id'])); ?>
+            <td class="actions">
+                <?php if($cancellation['Attendee']['cancel_count'] == 1) echo $this->Form->postLink(__('Excuse Cancellation'), array('controller' => 'attendees', 'action' => 'excuse_cancellation', $cancellation['Attendee']['id']), null, __('Are you sure you want to excuse %s\'s cancellation?', $cancellation['Attendee']['name']));?>
+                <?php /**<?php echo $this->Html->link(__('View'), array('action' => 'view', $attendee['Attendee']['id'])); ?>
 		<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $attendee['Attendee']['id'])); ?>
-		<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $attendee['Attendee']['id']), null, __('Are you sure you want to delete # %s?', $attendee['Attendee']['id'])); ?>
-            </td>**/?>
+		<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $attendee['Attendee']['id']), null, __('Are you sure you want to delete # %s?', $attendee['Attendee']['id'])); ?>**/?>
+            </td>
 	</tr>
 <?php endforeach; ?>
     </table>

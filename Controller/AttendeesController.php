@@ -181,6 +181,36 @@ class AttendeesController extends AppController {
             );
             $this->set('cancellations',$this->paginate());
         }
+        
+        public function excuse_cancellation($id) {
+                $this->Attendee->id = $id;
+		if (!$this->Attendee->exists()) {
+			throw new NotFoundException(__('Invalid attendee'));
+		}
+		$this->request->onlyAllow('post', 'excuse_cancellation');
+                $attendee = $this->Attendee->find('first',array('conditions' => array('Attendee.id' => $id),'recursive' => -1));
+		$this->request->data['Finance'] = array(
+                    'conference_id' => $attendee['Attendee']['conference_id'],
+                    'receive_date' => date('Y-m-d'),
+                    'locality_id' => $attendee['Attendee']['locality_id'],
+                    'finance_type_id' => 4,
+                    'count' => -1,
+                    'rate' => $attendee['Attendee']['rate'],
+                    'charge' => '',
+                    'payment' => '',
+                    'balance' => '0.00',
+                    'comment' => 'Excused',
+                );
+                $this->request->data['FinanceAttendee'][0] = array(
+                    'cancel_attendee_id' => $id,
+                );
+                if ($this->Attendee->AttendeeFinanceCancel->Finance->saveAssociated($this->request->data,array('validate' => true,'deep' => true))) {
+                    $this->Session->setFlash(__('Cancellation excused'),'success');
+			$this->redirect(array('action' => 'cancel_report'));
+		}
+		$this->Session->setFlash(__('Not able to be excused'),'failure');
+		$this->redirect(array('action' => 'cancel_report'));
+        }
 
 /**
  * checkin_report method
@@ -309,6 +339,11 @@ class AttendeesController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
+                    if (empty($this->request->data['Attendee']['reg_type'])) {
+                        $this->Session->setFlash(__('Indicate a registration type'),'failure');
+                    } elseif (empty($this->request->data['Attendee']['locality_id'])) {
+                        $this->Session->setFlash(__('Indicate a locality. If unknown and attendee paid, indicate "other."'),'failure');
+                    } else {
 			$this->Attendee->create();
                         //Adds other allergy information to comments
                         if (!empty($this->request->data['Attendee']['other_allergies']) && strpos($this->request->data['Attendee']['comment'],'Other Allergies:') === false) {
@@ -323,95 +358,84 @@ class AttendeesController extends AppController {
                         
                         //Sets rate based on registration type
                         //Get rate structure
-                        $conference = $this->Attendee->Conference->find('all',array('conditions' => array('Conference.id' => $this->request->data['Attendee']['conference_id']),'recursive' => -1));
-                        $conference_location = $conference[0]['Conference']['conference_location_id'];
+                        $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->request->data['Attendee']['conference_id']),'recursive' => -1));
+                        $conference_location = $conference['Conference']['conference_location_id'];
                         $rates = $this->Attendee->Conference->ConferenceLocation->Rate->conference_rates($conference_location);
                         
                         $finance_comment = '';
                         
                         if ($this->request->data['Attendee']['locality_id'] <= 3) {
-                            $this->request->data['Attendee']['rate'] = $rates['serving']['cost'] + $rates['serving']['latefee_applies'] * $rates['late_fee']['cost'];
+                            $this->request->data['Attendee']['calculated_rate'] = $rates['serving']['cost'] + $rates['serving']['latefee_applies'] * $rates['late_fee']['cost'];
                         } elseif ($this->request->data['Attendee']['nurse'] == 1) {
-                            $this->request->data['Attendee']['rate'] = $rates['nurse']['cost'] + $rates['nurse']['latefee_applies'] * $rates['late_fee']['cost'];
+                            $this->request->data['Attendee']['calculated_rate'] = $rates['nurse']['cost'] + $rates['nurse']['latefee_applies'] * $rates['late_fee']['cost'];
                             //Need to add check for FTTA or non-FTTA nurse.
                             $finance_comment = 'Nurse(s)';
                             if ($this->request->data['Attendee']['comment'] == null) $this->request->data['Attendee']['comment'] = 'Nurse';
                             else $this->request->data['Attendee']['comment'] = 'Nurse; '.$this->request->data['Attendee']['comment'];
                         } elseif ($this->request->data['Attendee']['reg_type'] == 'sat_only') {
-                            $this->request->data['Attendee']['rate'] = $rates['sat_only']['cost'] + $rates['sat_only']['latefee_applies'] * $rates['late_fee']['cost'];
+                            $this->request->data['Attendee']['calculated_rate'] = $rates['sat_only']['cost'] + $rates['sat_only']['latefee_applies'] * $rates['late_fee']['cost'];
                         } elseif ($this->request->data['Attendee']['reg_type'] == 'pt') {
                             if (!empty($this->request->data['Attendee']['pt_misc'])) {
                                 foreach ($this->request->data['Attendee']['pt_misc'] as $pt_misc):
-                                    $this->request->data['Attendee']['rate'] = $this->request->data['Attendee']['rate'] + $rates[$pt_misc]['cost'];
+                                    //Add water bottle and booklet cost
+                                    $this->request->data['Attendee']['calculated_rate'] = $this->request->data['Attendee']['calculated_rate'] + $rates[$pt_misc]['cost'];
                                 endforeach;
                             }
-                            $this->request->data['Attendee']['rate'] = $this->request->data['Attendee']['rate'] + $rates['meal']['cost'] * count(array_filter($this->request->data['Attendee']['pt_meals']));
+                            //Add meal cost to rate
+                            $this->request->data['Attendee']['calculated_rate'] = $this->request->data['Attendee']['calculated_rate'] + $rates['meal']['cost'] * count(array_filter($this->request->data['Attendee']['pt_meals']));
                         } elseif ($this->request->data['Attendee']['reg_type'] == 'ft_nolodging') {
-                            $this->request->data['Attendee']['rate'] = $rates['ft_nolodging']['cost'] + $rates['ft_nolodging']['latefee_applies'] * $rates['late_fee']['cost'];
+                            $this->request->data['Attendee']['calculated_rate'] = $rates['ft_nolodging']['cost'] + $rates['ft_nolodging']['latefee_applies'] * $rates['late_fee']['cost'];
                             $finance_comment = 'No lodging:';
                         } else {
-                            $this->request->data['Attendee']['rate'] = $rates['ft']['cost'] + $rates['ft']['latefee_applies'] * $rates['late_fee']['cost'];
+                            $this->request->data['Attendee']['calculated_rate'] = $rates['ft']['cost'] + $rates['ft']['latefee_applies'] * $rates['late_fee']['cost'];
                         }
                         
-                        //Check for existing finances entries for same kind of transaction
-                        $existing_finances = $this->Attendee->AttendeeFinanceAdd->Finance->find('all',array(
-                            'conditions' => array(
-                                'Finance.conference_id' => $this->request->data['Attendee']['conference_id'],
-                                'Finance.locality_id' => $this->request->data['Attendee']['locality_id'],
-                                'Finance.rate' => $this->request->data['Attendee']['rate'],
-                                'Finance.finance_type_id' => $finance_type,
-                                'Finance.comment LIKE' => '%'.$finance_comment.'%',
-                            ),
-                            'fields' => array('Finance.id', 'Finance.conference_id', 'Finance.receive_date', 'Finance.locality_id', 'Finance.finance_type_id', 'Finance.count', 'Finance.rate', 'Finance.charge', 'Finance.payment', 'Finance.balance', 'Finance.comment'),
-                            'recursive' => -1,
-                        ));
-                            
-                        //If existing finance entry found, update entry with new count.
-                        if (count($existing_finances) >= 1) {
-                            $this->request->data['AttendeeFinanceAdd'][0] = array(
-                                'finance_id' => $existing_finances[0]['Finance']['id'],
-                                'Finance' => array(
-                                    'id' => $existing_finances[0]['Finance']['id'],
-                                    'receive_date' => date('Y-m-d',strtotime('now')),
-                                    'finance_type_id' => $existing_finances[0]['Finance']['finance_type_id'],
-                                    'conference_id' => $existing_finances[0]['Finance']['conference_id'],
-                                    'locality_id' => $existing_finances[0]['Finance']['locality_id'],
-                                    'count' => $existing_finances[0]['Finance']['count'] + 1,
-                                    'rate' => $existing_finances[0]['Finance']['rate'],
-                                    'charge' => null,
-                                    'payment' => $existing_finances[0]['Finance']['payment'],
-                                    'balance' => '0.00',
-                                )
-                            );
-                        } else {
-                            //Otherwise add new finance entry for this transaction
-                            $this->request->data['AttendeeFinanceAdd'][0] = array(
-                                'Finance' => array(
-                                    'conference_id' => $this->request->data['Attendee']['conference_id'],
-                                    'receive_date' => date('Y-m-d',strtotime('now')),
-                                    'locality_id' => $this->request->data['Attendee']['locality_id'],
-                                    'finance_type_id' => $finance_type,
-                                    'count' => 1,
-                                    'rate' => $this->request->data['Attendee']['rate'],
-                                    'charge' => '',
-                                    'payment' => '',
-                                    'balance' => '0.00',
-                                    'comment' => $finance_comment,
-                            ));
+                        //Use calculated rate if no rate exception
+                        if (empty($this->request->data['Attendee']['rate'])) {
+                            $this->request->data['Attendee']['rate'] = $this->request->data['Attendee']['calculated_rate'];
                         }
-                            
-                        //Check in attendee
-                        $this->request->data['CheckIn'] = array(
-                            'timestamp' => ''
+                        
+                        //Add finance entry
+                        $this->request->data['AttendeeFinanceAdd'][0] = array(
+                            'Finance' => array(
+                                'conference_id' => $this->request->data['Attendee']['conference_id'],
+                                'receive_date' => $this->request->data['CheckIn']['timestamp']['year'].'-'.$this->request->data['CheckIn']['timestamp']['month'].'-'.$this->request->data['CheckIn']['timestamp']['day'],
+                                'locality_id' => $this->request->data['Attendee']['locality_id'],
+                                'finance_type_id' => 3,
+                                'count' => 1,
+                                'rate' => $this->request->data['Attendee']['rate'],
+                                'charge' => '',
+                                'payment' => $this->request->data['Attendee']['paid_at_conf'],
+                                'balance' => '0.00',
+                                'comment' => $finance_comment,
+                        ));
+                        
+                        //Add Onsite Registration entry
+                        $this->request->data['OnsiteRegistration'] = array(
+                            'conference_id' => $this->request->data['Attendee']['conference_id'],
+                            'registration' => $this->request->data['CheckIn']['timestamp']
                         );
                         
-                        if ($this->Attendee->saveAssociated($this->request->data,array('validate' => true,'deep' => true))) {
+                        //Add PartTimeRegistration entry as needed
+                        if ($this->request->data['Attendee']['reg_type'] == 'pt') {
+                            $this->request->data['PartTimeRegistration']['conference_id'] = $this->request->data['Attendee']['conference_id'];
+                            $pt_entries = array_merge($this->request->data['Attendee']['pt_meetings'],$this->request->data['Attendee']['pt_meals']);
+                            foreach ($pt_entries as $pt_entry):
+                                $this->request->data['PartTimeRegistration'][$pt_entry] = 1;
+                            endforeach;
+                        }
+                            
+                        if ($this->Attendee->saveAssociated($this->request->data,array('validate' => false,'deep' => true))) {
                                 $this->Session->setFlash(__('The attendee has been saved'),'success');
                                 $this->redirect(array('action' => 'add'));
                         } else {
+                            debug($this->request->data);
+                            exit;
 				$this->Session->setFlash(__('The attendee could not be saved. Please, try again.'),'failure');
 			}
+                    }
 		}
+                $this->Attendee->validate = '';
                 $conferences = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference())));
                 $localities = $this->Attendee->Locality->find('list');
 		$campuses = $this->Attendee->Campus->find('list');

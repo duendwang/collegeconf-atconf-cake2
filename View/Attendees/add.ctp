@@ -31,7 +31,10 @@
                 <td width=25></td>
 		<td><?php echo $this->Form->input('first_name');?></td>
 		<td><?php echo $this->Form->input('last_name');?></td>
-		<td><?php echo $this->Form->input('gender', array('type' => 'select', 'empty' => true, 'options' => array('B' => 'Brother','S' => 'Sister'),'default' => null));?></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2"><?php echo $this->Form->input('campus_id', array('empty' => true, 'default' => null));?></td>
             </tr>
             <tr>
                 <td></td>
@@ -40,12 +43,17 @@
             </tr>
             <tr>
                 <td></td>
+                <td><?php echo $this->Form->input('gender', array('type' => 'select', 'empty' => true, 'options' => array('B' => 'Brother','S' => 'Sister'),'default' => null));?></td>
 		<td><?php echo $this->Form->input('status_id', array('label' => 'Current Status','empty' => true, 'default' => null));?></td>
-		<td colspan="2"><?php echo $this->Form->input('campus_id', array('empty' => true, 'default' => null));?></td>
             </tr>
             <tr>
                 <td></td>
                 <td><?php echo $this->Form->input('locality_id',array('empty' => true,'default' => null));?></td>
+                <td><?php echo $this->Form->input('paid_at_conf',array('label' => 'Amount Paid'));?></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><?php echo $this->Form->input('CheckIn.timestamp',array('label' => 'Check in Time'));?></td>
             </tr>
             <tr>
                 <td></td>
@@ -60,7 +68,7 @@
                 <td width=25></td>
                 <td colspan=3>
                     <?php echo $this->Form->radio('reg_type',array(
-                        'ft_lodging' => 'Full time with lodging'.$this->Form->input('lodging_id',array('label' => '&emsp;&emsp;&emsp; Lodging','empty' => true,'default' => null,'style' => "margin-left: 3em")),
+                        'ft_lodging' => 'Full time with lodging (fill out lodging below)',
                         'ft_nolodging' => 'Full time, no lodging',
                         'sat_only' => 'Saturday only (3 meetings, 2 meals, booklet, water bottle)',
                         'pt' => 'Other:'
@@ -78,10 +86,10 @@
                 <td></td>
                 <td></td>
                 <td style="padding-left: 2em">
-                    <?php echo $this->Form->input('pt_meetings',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('fri' => 'Friday night','satm' => 'Saturday morning','sata' => 'Saturday afternoon','satn' => 'Saturday night','ld' => 'LD morning'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
+                    <?php echo $this->Form->input('pt_meetings',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('fri_mtg' => 'Friday night','sat_mtg1' => 'Saturday morning','sat_mtg2' => 'Saturday afternoon','sat_mtg3' => 'Saturday night','ld_mtg' => 'LD morning'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
                 </td>
                 <td style="padding-left: 2em">
-                    <?php echo $this->Form->input('pt_meals',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('fri' => 'Friday dinner','satb' => 'Saturday breakfast','satl' => 'Saturday lunch','satd' => 'Saturday dinner','ldb' => 'LD breakfast','ldl' => 'LD lunch'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
+                    <?php echo $this->Form->input('pt_meals',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('fri_din' => 'Friday dinner','sat_bkfst' => 'Saturday breakfast','sat_lun' => 'Saturday lunch','sat_din' => 'Saturday dinner','ld_bkfst' => 'LD breakfast','ld_lun' => 'LD lunch'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
                 </td>
             </tr>
             <tr>
@@ -93,8 +101,14 @@
                 <td></td>
                 <td></td>
                 <td style="padding-left: 2em">
-                    <?php echo $this->Form->input('pt_misc',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('book' => 'Outline booklet','water' => 'Water bottle'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
+                    <?php echo $this->Form->input('pt_misc',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('booklet' => 'Outline booklet','water' => 'Water bottle'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
                 </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td><?php echo $this->Form->input('rate',array('label' => 'Rate (only if different from standard calculated)'));?></td>
+                <td><?php echo $this->Form->input('lodging_id',array('label' => '&emsp;&emsp;&emsp; Lodging','empty' => true,'default' => null,'style' => "margin-left: 3em"));?></td>
             </tr>
         </table>
     </fieldset>
