@@ -10,8 +10,8 @@
     <?php foreach ($confcontacts as $confcontact): ?>
 	<tr>
             <td><?php echo h($confcontact['Locality']['name']); ?>&nbsp;</td>
-            <td><?php echo h($confcontact['Attendee']['first_name']); ?>&nbsp;</td>
-            <td><?php echo h($confcontact['Attendee']['last_name']); ?>&nbsp;</td>
+            <td><?php echo $this->Html->link($confcontact['Attendee']['first_name'],array('action' => 'view',$confcontact['Attendee']['id'])); ?>&nbsp;</td>
+            <td><?php echo $this->Html->link($confcontact['Attendee']['last_name'],array('action' => 'view',$confcontact['Attendee']['id'])); ?>&nbsp;</td>
             <td><?php echo h($confcontact['Attendee']['gender']); ?>&nbsp;</td>
             <td><?php echo h($confcontact['Attendee']['cell_phone']); ?>&nbsp;</td>
             <td>

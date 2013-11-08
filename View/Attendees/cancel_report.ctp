@@ -27,8 +27,8 @@
     <?php foreach ($cancellations as $cancellation): ?>
 	<tr>
             <td><?php echo h($cancellation['Locality']['name']); ?>&nbsp;</td>
-            <td><?php echo h($cancellation['Attendee']['first_name']); ?>&nbsp;</td>
-            <td><?php echo h($cancellation['Attendee']['last_name']); ?>&nbsp;</td>
+            <td><?php echo $this->Html->link($cancellation['Attendee']['first_name'],array('action' => 'view',$cancellation['Attendee']['id'])); ?>&nbsp;</td>
+            <td><?php echo $this->Html->link($cancellation['Attendee']['last_name'],array('action' => 'view',$cancellation['Attendee']['id'])); ?>&nbsp;</td>
             <td><?php echo h($cancellation['Attendee']['gender']); ?>&nbsp;</td>
             <td><?php echo h($cancellation['Attendee']['rate']); ?>&nbsp;</td>
             <td><?php echo h($cancellation['Cancel']['created']); ?>&nbsp;</td>

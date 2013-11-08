@@ -153,12 +153,29 @@ class AttendeesController extends AppController {
             $this->Attendee->recursive = 0;
             $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => -1));
             if ($no_show) {
-                $conditions = array('OR' => array('AND' =>array('Attendee.cancel_count' => 1,'Cancel.created >' => $conference['Conference']['start_date'],'Cancel.replaced' => null), 'AND' => array('Attendee.check_in_count' => 0,'Attendee.cancel_count' => 0)));
+                $conditions = array(
+                    'OR' => array(
+                        array('AND' => array(
+                            'Attendee.cancel_count' => 1,
+                            'Cancel.created >' => $conference['Conference']['start_date'],
+                            'Cancel.replaced' => ''
+                        )),
+                        array('AND' => array(
+                            'Attendee.check_in_count' => 0,
+                            'Attendee.cancel_count' => 0
+                        ))
+                    )
+                );
             } else {
-                $conditions = array('Attendee.cancel_count' => 1,'Cancel.created >' => $conference['Conference']['start_date'],'Cancel.replaced' => null);
+                $conditions = array(
+                    'Attendee.cancel_count' => 1,
+                    'Cancel.created >' => $conference['Conference']['start_date'],
+                    'Cancel.replaced' => ''
+                );
             }
             $this->paginate = array(
                 'conditions' => $conditions,
+                'contain' => $this->Attendee->contain, 
                 'order' => array('Locality.name' => 'asc'),
                 'limit' => 50,
             );

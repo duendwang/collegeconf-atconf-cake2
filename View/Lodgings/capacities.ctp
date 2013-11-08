@@ -9,7 +9,7 @@
                         <th>Gender Assigned</th>                        
 	<?php foreach ($lodgings as $lodging): ?>
 	<tr>
-            <td><?php echo h($lodging['Lodging']['code']); ?>&nbsp;</td>
+            <td><?php echo $this->Html->link($lodging['Lodging']['code'],array('action' => 'view',$lodging['Lodging']['id'])); ?>&nbsp;</td>
             <td><?php echo h($lodging['Lodging']['name']); ?>&nbsp;</td>
             <td><?php echo h($lodging['Lodging']['room']); ?>&nbsp;</td>
             <td><?php echo $lodging['Lodging']['capacity'] - $lodging['Lodging']['attendee_count']; ?>&nbsp;</td>
