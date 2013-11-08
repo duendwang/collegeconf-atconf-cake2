@@ -46,7 +46,7 @@ class LodgingsController extends AppController {
                 foreach ($lodging['Attendee'] as $attendee):
                     $localities[] = $attendee['Locality']['name'];
                 endforeach;
-                $lodging['Lodging']['localities'] = implode(', ',$localities);
+                if (!empty($localities)) $lodging['Lodging']['localities'] = implode(', ',$localities);
             endforeach;
             $this->set(compact('lodgings'));
         }
