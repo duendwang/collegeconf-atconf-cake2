@@ -9,7 +9,7 @@
 
 <?php foreach ($report_entries as $report_entry): ?>
 	<tr>
-      		<td><?php echo h($report_entry['Locality']['name']); ?>&nbsp;</td>
+      		<td><?php echo $this->Html->link($report_entry['Locality']['name'],array('action' => 'report',$report_entry['Locality']['id'])); ?>&nbsp;</td>
 		<td><?php echo h($report_entry[0]['count']); ?>&nbsp;</td>
                 <td><?php echo h($report_entry[0]['total charge']); ?>&nbsp;</td>
 		<td><?php echo h($report_entry[0]['total payment']); ?>&nbsp;</td>

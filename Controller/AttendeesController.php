@@ -429,8 +429,6 @@ class AttendeesController extends AppController {
                                 $this->Session->setFlash(__('The attendee has been saved'),'success');
                                 $this->redirect(array('action' => 'add'));
                         } else {
-                            debug($this->request->data);
-                            exit;
 				$this->Session->setFlash(__('The attendee could not be saved. Please, try again.'),'failure');
 			}
                     }
@@ -787,151 +785,17 @@ elseif($attendee['Attendee']['gender'] === 'S') $attendee['Attendee']['gender'] 
 		}
 
                 if ($this->request->is('post') || $this->request->is('put')) {
-                        //Updates other allergy information to comments
-                        if (!empty($this->request->data['Attendee']['other_allergies']) && strpos($this->request->data['Attendee']['comment'],'Other Allergies:') === false) {
-                            $this->request->data['Attendee']['comment'] = 'Other Allergies: '.str_replace(';',',',$this->request->data['Attendee']['other_allergies']).'; '.$this->request->data['Attendee']['comment'];
-                        }
-                        
                         //changes first and last names to correct case
                         $this->request->data['Attendee']['first_name'] = ucwords($this->request->data['Attendee']['first_name']);
                         $this->request->data['Attendee']['last_name'] = ucwords($this->request->data['Attendee']['last_name']);
                         
-                        //Changes group field to all caps
-                        $this->request->data['Attendee']['group'] = strtoupper($this->request->data['Attendee']['group']);
-                        
                         //Get related attendee information
                         $created = $this->Attendee->field('created',array('Attendee.id' => $this->request->data['Attendee']['id']));
                         $this->request->data['Attendee']['locality_id'] = $this->Attendee->field('locality_id',array('Attendee.id' => $this->request->data['Attendee']['id']));
-                        
-                        //Sets rate based on save time related to the two registration deadlines
-                        //TODO Consider linking rates to Conference deadlines.
-                        $conference_dates = $this->Attendee->Conference->conference_dates($this->request->data['Attendee']['conference_id']);
-                        
-                        //Get rate structure
-                        $conference = $this->Attendee->Conference->find('all',array('conditions' => array('Conference.id' => $this->request->data['Attendee']['conference_id']),'recursive' => -1));
-                        $conference_location = $conference[0]['Conference']['conference_location_id'];
-                        $rates = $this->Attendee->Conference->ConferenceLocation->Rate->conference_rates($conference_location);
-                        
-                        //Determine if initial registration was submitted after first deadline.
-                        if (strtotime($created) > $conference_dates['first_deadline']) {
-                            $late_reg = 1;
-                            $finance_type = 2;
-                        } else {
-                            $late_reg = 0;
-                            $finance_type = 1;
-                        }
-                        
-                        $finance_comment = '';
-                        
-                        if($this->Auth->user('UserType.account_type_id') == 4 && strtotime('now') > $conference_dates['second_deadline']) {
-                            $this->Session->setFlash(__('Registration is now closed. No further changes can be made. For simple attendee information changes, please contact the registration team.'),'failure');
-                            //TODO Add an independent method (maybe in beforeSave) to check for this instead of in each method.
-                            //TODO Do the check not when saving, but when opening the form.
-                            $this->redirect(array('action' => 'index'));
-                        } elseif ($this->request->data['Attendee']['locality_id'] <= 3) {
-                            $this->request->data['Attendee']['rate'] = $rates['serving']['cost'] + $late_reg * $rates['serving']['latefee_applies'] * $rates['late_fee']['cost'];
-                            $new_registration_type = 'Serving';
-                        } elseif ($this->request->data['Attendee']['nurse'] == 1) {
-                            $this->request->data['Attendee']['rate'] = $rates['nurse']['cost'] + $late_reg * $rates['nurse']['latefee_applies'] * $rates['late_fee']['cost'];
-                            $finance_comment = 'Nurse(s)';
-                            $new_registration_type = 'Nurse';
-                            if ($this->request->data['Attendee']['comment'] == null) $this->request->data['Attendee']['comment'] = 'Nurse';
-                            elseif (strpos($this->request->data['Attendee']['comment'],'Nurse') !== false) {}
-                            else $this->request->data['Attendee']['comment'] = 'Nurse; '.$this->request->data['Attendee']['comment'];
-                        } elseif ($this->request->data['Attendee']['group'] == 'OWN') {
-                            $this->request->data['Attendee']['rate'] = $rates['ft_nolodging']['cost'] + $late_reg * $rates['ft_nolodging']['latefee_applies'] * $rates['late_fee']['cost'];
-                            $finance_comment = 'No lodging:';
-                            $new_registration_type = 'FT_nolodging';
-                        } else {
-                            $this->request->data['Attendee']['rate'] = $rates['ft']['cost'] + $late_reg * $rates['ft']['latefee_applies'] * $rates['late_fee']['cost'];
-                            $new_registration_type = 'FT_lodging';
-                        }
-                        
-                        //Checks the original finance and sees if it needs to be adjusted.
-                        $attendee_finance = $this->Attendee->AttendeeFinanceAdd->find('first',array('conditions' => array('AttendeeFinanceAdd.add_attendee_id' => $this->request->data['Attendee']['id']),'recursive' => -1));
-                        $this->Attendee->AttendeeFinanceAdd->read(null,$attendee_finance['AttendeeFinanceAdd']['id']);
-                        $original_finance = $this->Attendee->AttendeeFinanceAdd->Finance->find('first',array('conditions' => array('Finance.id' => $attendee_finance['AttendeeFinanceAdd']['finance_id']),'recursive' => -1));
-                        //TODO account for finances that are replacements and/or rate changes and make rate change finance if pre-registered attendee changes rate after first deadline
-                        if ($this->request->data['Attendee']['rate'] !== $original_finance['Finance']['rate']) {
-                            $change_finance = 1;
-                            
-                            //Remove nurse comment from attendee if applicable
-                            if (strpos($original_finance['Finance']['comment'],'Nurse') !== false && $new_registration_type !== 'Nurse') {
-                                if(strpos($this->request->data['Attendee']['comment'],'Nurse;') !== false) {
-                                    $this->request->data['Attendee']['comment'] = str_replace('Nurse;','',$this->request->data['Attendee']['comment']);
-                                } elseif ($this->request->data['Attendee']['comment'] == 'Nurse') {
-                                    $this->request->data['Attendee']['comment'] = '';
-                                } else {
-                                    $this->request->data['Attendee']['comment'] = str_replace('Nurse','',$this->request->data['Attendee']['comment']);
-                                }
-                            }
-                            
-                            //Check for existing finances entries for same kind of transaction
-                            $existing_finances = $this->Attendee->AttendeeFinanceAdd->Finance->find('all',array(
-                                'conditions' => array(
-                                    'Finance.conference_id' => $this->request->data['Attendee']['conference_id'],
-                                    'Finance.locality_id' => $this->request->data['Attendee']['locality_id'],
-                                    'Finance.rate' => $this->request->data['Attendee']['rate'],
-                                    'Finance.finance_type_id' => $finance_type,
-                                    'Finance.comment LIKE' => '%'.$finance_comment.'%',
-                                    ),
-                                'fields' => array('Finance.id', 'Finance.conference_id', 'Finance.receive_date', 'Finance.locality_id', 'Finance.finance_type_id', 'Finance.count', 'Finance.rate', 'Finance.charge', 'Finance.payment', 'Finance.balance', 'Finance.comment'),
-                                'recursive' => -1,
-                                ));
-                        
-                            //If existing finance entry found, update entry with new count.
-                            if (count($existing_finances) >= 1) {
-                                $this->request->data['AttendeeFinanceAdd'][0] = array(
-                                    'finance_id' => $existing_finances[0]['Finance']['id'],
-                                    'Finance' => array(
-                                        'id' => $existing_finances[0]['Finance']['id'],
-                                        'receive_date' => date('Y-m-d',strtotime('now')),
-                                        'finance_type_id' => $existing_finances[0]['Finance']['finance_type_id'],
-                                        'conference_id' => $existing_finances[0]['Finance']['conference_id'],
-                                        'locality_id' => $existing_finances[0]['Finance']['locality_id'],
-                                        'count' => $existing_finances[0]['Finance']['count'] + 1,
-                                        'rate' => $existing_finances[0]['Finance']['rate'],
-                                        'charge' => null,
-                                        'payment' => $existing_finances[0]['Finance']['payment'],
-                                        'balance' => '0.00',
-                                    )
-                                );
-                            } else {
-                                //Otherwise add new finance entry for this transaction
-                                $this->request->data['AttendeeFinanceAdd'][0] = array(
-                                    'Finance' => array(
-                                        'conference_id' => $this->request->data['Attendee']['conference_id'],
-                                        'receive_date' => date('Y-m-d',strtotime('now')),
-                                        'locality_id' => $this->request->data['Attendee']['locality_id'],
-                                        'finance_type_id' => $finance_type,
-                                        'count' => 1,
-                                        'rate' => $this->request->data['Attendee']['rate'],
-                                        'charge' => '',
-                                        'payment' => '',
-                                        'balance' => '0.00',
-                                        'comment' => $finance_comment,
-                                ));
-                            }
-                        }
 			
-                        if ($this->Attendee->saveAssociated($this->request->data,array('validate' => true,'deep' => true))) {
-                                if ($change_finance == 1) {
-                                    $this->Attendee->AttendeeFinanceAdd->Finance->id = $original_finance['Finance']['id'];
-                                    $this->Attendee->AttendeeFinanceAdd->Finance->save(array(
-                                        'count' => $original_finance['Finance']['count'] - 1,
-                                        'rate' => $original_finance['Finance']['rate'],
-                                        'charge' => null,
-                                        'payment' => $original_finance['Finance']['payment'],
-                                        'balance' => null,
-                                    ));
-                                }
-                                
-				//$this->_flash(__('The attendee has been saved',true),'success');
-                                $this->Session->setFlash(__('The attendee has been saved'),'success');
-				if (in_array($this->Auth->user('UserType.account_type_id'),array('2','3'))) {
-                                //if ($this->UserType->find('list',array('conditions' => array('UserType.user_id =' => $this->Auth->user('id'),'UserType.account_type_id' => array('2','3'))))) {
-                                    $this->redirect(array('action' => 'process'));
-                                } else $this->redirect(array('action' => 'index'));
+                        if ($this->Attendee->save($this->request->data,array('validate' => false))) {
+                                $this->Session->setFlash(__('The attendee has been saved. Finances, etc, were not automatically updated. Please update those manually below as necessary.'),'success');
+                                $this->redirect(array('action' => 'view',$this->request->data['Attendee']['id']));
 			} else {
 				$this->Session->setFlash(__('The attendee could not be saved. Please, try again.'),'failure');
 			}
@@ -939,28 +803,13 @@ elseif($attendee['Attendee']['gender'] === 'S') $attendee['Attendee']['gender'] 
 			$options = array('conditions' => array('Attendee.' . $this->Attendee->primaryKey => $id));
 			$this->request->data = $this->Attendee->find('first', $options);
                         
-                        //Move other allergies information to other allergies field
-                        if (strpos($this->request->data['Attendee']['comment'],'Other Allergies:') !== false) {
-                            $comment = explode(';',$this->request->data['Attendee']['comment']);
-                            foreach ($comment as $k => $v):
-                                if (strpos($v,'Other Allergies:') !== false) {
-                                    $this->request->data['Attendee']['other_allergies'] = trim(str_replace('Other Allergies:','',$v));
-                                    unset($comment[$k]);
-                                    break;
-                                } //elseif (strpos($v,'Nurse') !== false) {
-                                    //unset($comment[$k]);
-                                //}
-                            endforeach;
-                            $this->request->data['Attendee']['comment'] = trim(implode(';',$comment));
-                        }
-                        
                         //Determine if nurse box needs to be checked
                         if (strpos($this->request->data['Attendee']['comment'],'Nurse') !== false) {
                             $this->request->data['Attendee']['nurse'] = 1;
                        }
 		}
-                $conferences = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_term_conferences())));
-		$this->set('locality', $this->Auth->user('Locality.id'));
+                $this->Attendee->validate = '';
+                $conferences = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference())));
 		$localities = $this->Attendee->Locality->find('list');
 		$campuses = $this->Attendee->Campus->find('list');
 		$statuses = $this->Attendee->Status->find('list', array('conditions' => array('Status.id >' => 1), 'order' => 'Status.id'));

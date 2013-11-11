@@ -16,12 +16,12 @@
 	<table>
                 <tr>
 			<td width=100></td>
-			<td><?php echo $this->Form->input('conference_id',array('empty' => true,'default' => null));?></td>
+			<td><?php echo $this->Form->input('conference_id');?></td>
 			<td><?php echo $this->Form->input('locality_id',array('empty' => true,'default' => null));?></td>
 		</tr>
 		<tr>
 			<td width=100></td>
-			<td><?php echo $this->Form->input('receive_date',array('label' => 'Date','empty' => true,'default' => null));?></td>
+			<td><?php echo $this->Form->input('receive_date');?></td>
 			<td><?php echo $this->Form->input('finance_type_id',array('label' => 'Description','empty' => true,'default' => null));?></td>
 		</tr>
 		<tr>
