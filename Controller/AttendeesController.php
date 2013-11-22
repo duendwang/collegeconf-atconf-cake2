@@ -27,7 +27,7 @@ class AttendeesController extends AppController {
  * @return void
  */
 	public function index() {
-                //Configure::write('debug', 0);
+                Configure::write('debug', 0);
 		$this->Attendee->recursive = -1;
                 $this->Prg->commonProcess();
                 if ($this->Attendee->parseCriteria($this->passedArgs)) {
@@ -75,7 +75,7 @@ class AttendeesController extends AppController {
                 
                 if(isset($locality)) {
                     $this->paginate = array(
-                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('AND' => array('Attendee.cancel_count' => 1, 'Cancel.created >' => date('Y-m-d h:i:s',strtotime($conference['Conference']['start_date'])),'Cancel.replaced' => null),'Attendee.cancel_count' => 0)),
+                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('AND' => array('Cancel.created >' => date('Y-m-d h:i:s',strtotime($conference['Conference']['start_date'])),'Cancel.replaced' => null),'Attendee.cancel_count' => 0)),
                         'contain' => $contain,
                         'limit' => 100,
                     );
@@ -126,7 +126,7 @@ class AttendeesController extends AppController {
 	}
 
 /**
- * cc_report method
+ * ccReport method
  *
  * @param string $id
  * @return void
@@ -145,12 +145,18 @@ class AttendeesController extends AppController {
 	}
 
 /**
- * cancel_report method
+ * cancelReport method
  * 
  * @return void
  */
         public function cancel_report($no_show = false) {
             $this->Attendee->recursive = 0;
+            $contain = array_merge(
+                    $this->Attendee->contain,
+                    array(
+                        'AttendeeFinanceCancel'
+                    )
+            );
             $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => -1));
             if ($no_show) {
                 $conditions = array(
@@ -175,13 +181,18 @@ class AttendeesController extends AppController {
             }
             $this->paginate = array(
                 'conditions' => $conditions,
-                'contain' => $this->Attendee->contain, 
+                'contain' => $contain, 
                 'order' => array('Locality.name' => 'asc'),
                 'limit' => 50,
             );
             $this->set('cancellations',$this->paginate());
         }
         
+/*
+ * excuseCancellation method
+ * 
+ * @return void
+ */
         public function excuse_cancellation($id) {
                 $this->Attendee->id = $id;
 		if (!$this->Attendee->exists()) {
@@ -210,6 +221,68 @@ class AttendeesController extends AppController {
 		}
 		$this->Session->setFlash(__('Not able to be excused'),'failure');
 		$this->redirect(array('action' => 'cancel_report'));
+        }
+
+/*
+ * unexcuseCancellation method
+ * 
+ * @return void
+ */
+        public function unexcuse_cancellation($id) {
+                $this->Attendee->id = $id;
+		if (!$this->Attendee->exists()) {
+			throw new NotFoundException(__('Invalid attendee'));
+		}
+		$this->request->onlyAllow('post', 'unexcuse_cancellation');
+                $contain = array(
+                    'AttendeeFinanceCancel' => array(
+                        'Finance'
+                    )
+                );
+                $attendee = $this->Attendee->find('first',array('conditions' => array('Attendee.id' => $id),'contain' => $contain,'recursive' => -1));
+                
+                //Check if attendee cancellation is already excused or replaced
+                if (!empty($attendee['AttendeeFinanceCancel'])) {
+                    $replacement = 0;
+                    $excused = 0;
+                    $others = 0;
+                    foreach ($attendee['AttendeeFinanceCancel'] as $attendeefinance):
+                        if ($attendeefinance['Finance']['finance_type_id'] == 5) {
+                            $replacement = $replacement + 1;
+                        } elseif ($attendeefinance['Finance']['finance_type_id'] == 4) {
+                            $excused = $excused + 1;
+                            $attendeefinance_id = $attendeefinance['id'];
+                            $finance_id = $attendeefinance['Finance']['id'];
+                        } else {
+                            $others = $others + 1;
+                        }
+                    endforeach;
+                    
+                    if ($replacement == 0 && $excused == 1) {
+                        if ($this->Attendee->AttendeeFinanceCancel->delete($attendeefinance_id,false)) {
+                            $attendeefinance_delete = 1;
+                        }
+                        if ($this->Attendee->AttendeeFinanceCancel->Finance->delete($finance_id,false)) {
+                            $finance_delete = 1;
+                        }
+                        if ($attendeefinance_delete == 1 && $finance_delete == 1) {
+                            $this->Session->setFlash(__('Reversed excused cancellation'),'success');
+                            $this->redirect(array('action' => 'cancel_report'));
+                        } else {
+                            $this->Session->setFlash(__('Unable to reverse excused cancellation'),'failure');
+                            $this->redirect(array('action' => 'cancel_report'));
+                        }
+                    } elseif ($replacement == 1) {
+                        $this->Session->setFlash(__('Attendee is already replaced'),'failure');
+                        $this->redirect(array('action' => 'cancel_report'));
+                    } elseif ($excused == 0) {
+                        $this->Session->setFlash(__('Attendee cancellation is not excused'),'failure');
+                        $this->redirect(array('action' => 'cancel_report'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Attendee is not canceled'),'failure');
+                    $this->redirect($this->referer());
+                }
         }
 
 /**
@@ -317,7 +390,7 @@ class AttendeesController extends AppController {
                     ),
                     'OnsiteRegistration',
                     'PartTimeRegistration',
-                    'Payment'
+                    'Payment',
                 ));
 		$options = array('conditions' => array('Attendee.' . $this->Attendee->primaryKey => $id),'contain' => $contain);
 		$attendee = $this->Attendee->find('first', $options);

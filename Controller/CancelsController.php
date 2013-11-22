@@ -43,15 +43,15 @@ class CancelsController extends AppController {
                 'Registered' => true,
                 'Checked in and canceled' => array(
                     'type' => 'failure',
-                    'message' => 'The attendee '.$attendee['Attendee']['name'].' has already been checked in.'
+                    'message' => 'The attendee %s has already been checked in and canceled.'
                 ),
                 'Checked in' => array(
                     'type' => 'failure',
-                    'message' => 'The attendee '.$attendee['Attendee']['name'].' has already been checked in.'
+                    'message' => 'The attendee %s has already been checked in.'
                 ),
                 'Canceled' => array(
                     'type' => 'warning',
-                    'message' => 'The attendee '.$attendee['Attendee']['name'].' is already canceled. Edit the existing cancellation entry <a href="'.Router::url(array('controller' => 'cancel','action' => 'edit',$attendee['Cancel']['id']),false).'">here</a>.',
+                    'message' => 'The attendee %s is already canceled. Edit the existing cancellation entry <a href="'.Router::url(array('controller' => 'cancels','action' => 'edit'),false).'/%s">here</a>.',
                 ),
                 'Not registered' => array(
                     'type' => 'failure',
@@ -60,11 +60,11 @@ class CancelsController extends AppController {
             );
             if (!empty($attendee_id)) {
                 $status = $this->Cancel->Attendee->get_status($attendee_id);
+                $attendee = $this->Cancel->Attendee->find('first',array('conditions' => array('Attendee.id' => $attendee_id)));
                 if ($messages[$status] === true) {
-                    $attendee = $this->Cancel->Attendee->find('first',array('conditions' => array('Attendee.id' => $attendee_id)));
                     $referer = $this->referer();
                 } else {
-                    $this->Session->setFlash(__($messages[$status]['message']),$messages[$status]['type']);
+                    $this->Session->setFlash(__(sprintf($messages[$status]['message'],$attendee['Attendee']['name'],$attendee['Cancel']['id'])),$messages[$status]['type']);
                     $this->redirect($this->referer());
                 }
             }
@@ -90,12 +90,9 @@ class CancelsController extends AppController {
                         $this->redirect($this->request->data['Referer']['url']);
                     } else {
                         $this->Session->setFlash(__('The attendee '.$attendee['Attendee']['name'].' could not be canceled. Please, try again.'),'failure');
-                        debug($this->request->data);
-                        debug($this->Cancel->validationErrors);
-                        exit;
                     }
                 } else {
-                    $this->Session->setFlash(__($messages[$status]['message']),$messages[$status]['type']);
+                    $this->Session->setFlash(__(sprintf($messages[$status]['message'],$attendee['Attendee']['name'],$attendee['Cancel']['id'])),$messages[$status]['type']);
                     $this->redirect($this->request->data['Referer']['url']);
                 }
             }

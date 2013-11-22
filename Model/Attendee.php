@@ -471,7 +471,10 @@ class Attendee extends AppModel {
 			'conditions' => '',
 			'fields' => '',
 			'order' => '',
-                        'counterCache' => true
+                        'counterCache' => true,
+                        'counterScope' => array(
+                            'Attendee.cancel_count' => 0
+                        )
 		),
 		'Creator' => array(
 			'className' => 'User',

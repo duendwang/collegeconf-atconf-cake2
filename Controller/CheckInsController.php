@@ -43,15 +43,15 @@ class CheckInsController extends AppController {
                 'Registered' => true,
                 'Checked in and canceled' => array(
                     'type' => 'failure',
-                    'message' => 'The attendee '.$attendee['Attendee']['first_name'].' '.$attendee['Attendee']['last_name'].' has already been checked in.'
+                    'message' => 'The attendee %s has already been checked in and canceled.'
                 ),
                 'Checked in' => array(
                     'type' => 'warning',
-                    'message' => 'The attendee '.$attendee['Attendee']['first_name'].' '.$attendee['Attendee']['last_name'].' has already been checked in.'
+                    'message' => 'The attendee %s has already been checked in.'
                 ),
                 'Canceled' => array(
                     'type' => 'failure',
-                    'message' => 'The attendee '.$attendee['Attendee']['first_name'].' '.$attendee['Attendee']['last_name'].' is already canceled. Edit the existing cancellation entry <a href="'.Router::url(array('controller' => 'cancel','action' => 'edit',$attendee['Cancel']['id']),false).'">here</a>.',
+                    'message' => 'The attendee %s is already canceled.',
                 ),
                 'Not registered' => array(
                     'type' => 'failure',
@@ -60,9 +60,7 @@ class CheckInsController extends AppController {
             );
             if (!empty($attendee_id)) {
                 $status = $this->CheckIn->Attendee->get_status($attendee_id);
-                if ($messages[$status] === true) {
-                    $attendee = $this->CheckIn->Attendee->find('first',array('conditions' => array('Attendee.id' => $attendee_id)));
-                }
+                $attendee = $this->CheckIn->Attendee->find('first',array('conditions' => array('Attendee.id' => $attendee_id)));
             }
             if ($this->request->is('post')) {
                 $barcode = array(
@@ -91,7 +89,7 @@ class CheckInsController extends AppController {
                         $this->redirect($this->referer());
                     }
                 } else {
-                    $this->Session->setFlash(__($messages[$status]['message']),$messages[$status]['type']);
+                    $this->Session->setFlash(__(sprintf($messages[$status]['message'],$attendee['Attendee']['name'],$attendee['Cancel']['id'])),$messages[$status]['type']);
                     $this->redirect($this->referer());
                 }
             }

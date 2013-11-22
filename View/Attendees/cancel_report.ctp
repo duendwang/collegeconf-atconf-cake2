@@ -12,7 +12,6 @@
         <p>To the far right, add a Comments column. This is different from the original comment column that should be hidden.</p>
         <p>Add an appropriate page header and format the document so that it displays properly on one page. Print the document for the brothers.</p>
         **/?>
-        
     <table cellpadding="0" cellspacing="0">
         <tr>
             <th><?php echo $this->Paginator->sort('locality_id'); ?></th>
@@ -34,7 +33,15 @@
             <td><?php echo h($cancellation['Cancel']['created']); ?>&nbsp;</td>
             <td><?php echo h($cancellation['Cancel']['reason']); ?>&nbsp;</td>
             <td class="actions">
-                <?php if($cancellation['Attendee']['cancel_count'] == 1) echo $this->Form->postLink(__('Excuse Cancellation'), array('controller' => 'attendees', 'action' => 'excuse_cancellation', $cancellation['Attendee']['id']), null, __('Are you sure you want to excuse %s\'s cancellation?', $cancellation['Attendee']['name']));?>
+                <?php if($cancellation['Attendee']['cancel_count'] == 1) {
+                    if (!empty($cancellation['AttendeeFinanceCancel'])) {
+                        echo $this->Form->postLink(__('UNexcuse Cancellation'), array('controller' => 'attendees', 'action' => 'unexcuse_cancellation', $cancellation['Attendee']['id']), null, __('Are you sure you want to UNexcuse %s\'s cancellation?', $cancellation['Attendee']['name']));
+                    } else {
+                        echo $this->Form->postLink(__('Excuse Cancellation'), array('controller' => 'attendees', 'action' => 'excuse_cancellation', $cancellation['Attendee']['id']), null, __('Are you sure you want to excuse %s\'s cancellation?', $cancellation['Attendee']['name']));
+                    }
+                } ?>
+                    
+                    
                 <?php /**<?php echo $this->Html->link(__('View'), array('action' => 'view', $attendee['Attendee']['id'])); ?>
 		<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $attendee['Attendee']['id'])); ?>
 		<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $attendee['Attendee']['id']), null, __('Are you sure you want to delete # %s?', $attendee['Attendee']['id'])); ?>**/?>
