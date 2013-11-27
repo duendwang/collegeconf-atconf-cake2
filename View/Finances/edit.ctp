@@ -38,7 +38,7 @@
 		<li><?php echo $this->Html->link(__('New Finance Attendee'), array('controller' => 'attendees_finances', 'action' => 'add')); ?> </li>
 	</ul>
 </div>
-<?php   
+<?php /**  
         echo $this->Html->scriptBlock('
                 function displayBalance() {
                     var count = $("#FinanceCount").val();
@@ -59,4 +59,4 @@
         
         //$this->Js->event('keypress', '$(\'input[name="data[Attendee][id]"]\').val(\'\');')
         echo $this->Js->writeBuffer();
-?>
+**/ ?>

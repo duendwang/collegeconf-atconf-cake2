@@ -1,16 +1,24 @@
 <div class="content">
 	<h2><?php echo __('Attendee Summary by Locality'); ?></h2>
-        <table cellpadding="0" cellspacing="0">
+        <table cellpadding="0" cellspacing="0" class="sortable">
 	<tr>
 			<th><?php echo $this->Paginator->sort('locality_id'); ?></th>
-                        <th><?php echo $this->Paginator->sort('count'); ?></th>
+                        <th><?php echo $this->Paginator->sort('total'); ?></th>
+                        <th><?php echo $this->Paginator->sort('checked_in'); ?></th>
+                        <th><?php echo $this->Paginator->sort('canceled'); ?></th>
+                        <th><?php echo $this->Paginator->sort('excused/Replaced'); ?></th>
+                        <th><?php echo $this->Paginator->sort('final_count'); ?></th>
                         <th><?php echo $this->Paginator->sort('total_charge'); ?></th>
 	</tr>
 	<?php
 	foreach ($summaries as $summary): ?>
 	<tr>
             <td><?php echo $this->Html->link($summary['Locality']['name'],array('action' => 'report',$summary['Locality']['id'])); ?>&nbsp;</td>
-            <td><?php echo h($summary[0]['count']); ?>&nbsp;</td>
+            <td><?php echo h($summary[0]['total']); ?>&nbsp;</td>
+            <td><?php echo h($summary[0]['checked_in']); ?>&nbsp;</td>
+            <td><?php echo h($summary[0]['canceled']); ?>&nbsp;</td>
+            <td><?php echo h($summary[0]['excused']); ?>&nbsp;</td>
+            <td><?php echo h($summary[0]['remaining_registered']); ?>&nbsp;</td>
             <td><?php echo h($summary[0]['total_charge']); ?>&nbsp;</td>
         </tr>
         <?php endforeach;?>

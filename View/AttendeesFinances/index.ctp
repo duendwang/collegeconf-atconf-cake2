@@ -15,10 +15,10 @@
 			<?php echo $this->Html->link($attendeesFinance['Finance']['id'], array('controller' => 'finances', 'action' => 'view', $attendeesFinance['Finance']['id'])); ?>
 		</td>
 		<td>
-			<?php echo $this->Html->link($attendeesFinance['Add']['id'], array('controller' => 'attendees', 'action' => 'view', $attendeesFinance['Add']['id'])); ?>
+			<?php echo $this->Html->link($attendeesFinance['AddAttendee']['name'], array('controller' => 'attendees', 'action' => 'view', $attendeesFinance['AddAttendee']['id'])); ?>
 		</td>
 		<td>
-			<?php echo $this->Html->link($attendeesFinance['Cancel']['id'], array('controller' => 'attendees', 'action' => 'view', $attendeesFinance['Cancel']['id'])); ?>
+			<?php echo $this->Html->link($attendeesFinance['CancelAttendee']['name'], array('controller' => 'attendees', 'action' => 'view', $attendeesFinance['CancelAttendee']['id'])); ?>
 		</td>
 		<td class="actions">
 			<?php echo $this->Html->link(__('View'), array('action' => 'view', $attendeesFinance['AttendeesFinance']['id'])); ?>

@@ -17,7 +17,7 @@
         if (isset($finances)) {
 	foreach ($finances as $finance): ?>
 	<tr>
-		<td><?php echo h($finance['Finance']['receive_date']); ?>&nbsp;</td>
+		<td><?php echo $this->Html->link(__($finance['Finance']['receive_date']),array('action' => 'edit',$finance['Finance']['id'])); ?></td>
 		<td>
 			<?php echo h($finance['Locality']['name']); ?>
 		</td>

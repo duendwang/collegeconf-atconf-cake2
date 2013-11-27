@@ -59,7 +59,7 @@ class AttendeesController extends AppController {
  * @return void
  */
         public function report($locality = null) {
-                $this->Attendee->recursive = 0;
+            $this->Attendee->recursive = 0;
                 $contain = array_merge($this->Attendee->contain,array(
                     'AttendeeFinanceAdd' => array(
                         'fields' => array(
@@ -68,14 +68,15 @@ class AttendeesController extends AppController {
                         'CancelAttendee' => array(
                             'fields' => 'CancelAttendee.name'
                         )
-                    )
+                    ),
+                    'AttendeeFinanceCancel'
                 ));
                 
                 $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => 0));
                 
                 if(isset($locality)) {
                     $this->paginate = array(
-                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('AND' => array('Cancel.created >' => date('Y-m-d h:i:s',strtotime($conference['Conference']['start_date'])),'Cancel.replaced' => null),'Attendee.cancel_count' => 0)),
+                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('AND' => array('Cancel.created >' => $conference['Conference']['start_date'],'Cancel.replaced' => ''),'Attendee.cancel_count' => 0)),
                         'contain' => $contain,
                         'limit' => 100,
                     );
@@ -92,6 +93,8 @@ class AttendeesController extends AppController {
                     }
                     if (!empty($attendee['Cancel']['replaced'])) {
                         $attendee['Cancel']['reason'] = $attendee['Cancel']['reason'].'; Replaced by '.$attendee['Cancel']['replaced'];
+                    } elseif (!empty($attendee['AttendeeFinanceCancel'])) {
+                        $attendee['Cancel']['reason'] = $attendee['Cancel']['reason'].'excused';
                     }
                     if (!empty($attendee['AttendeeFinanceAdd'])) {
                         foreach ($attendee['AttendeeFinanceAdd'] as &$attendee_finance):
@@ -113,15 +116,35 @@ class AttendeesController extends AppController {
  */
 	public function summary() {
                 $this->Attendee->recursive = 0;
+                $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => 0));
                 $contain = array(
                     'Locality' => array(
                         'fields' => array(
                             'Locality.name'
                         )
-                    )
+                    ),
+                    'Cancel',
                 );
                 
-                $summaries = $this->Attendee->find('all',array('contain' => $contain,'fields' => array('Attendee.locality_id','COUNT(Attendee.id) as count','SUM(rate) as total_charge'),'order' => array('Attendee.locality_id' => 'asc'),'group' => 'Attendee.locality_id','order' => 'Locality.name'));
+                $canceled_excused = $this->Attendee->AttendeeFinanceCancel->find('list',array('conditions' => array('AttendeeFinanceCancel.cancel_attendee_id NOT' => null),'fields' => 'AttendeeFinanceCancel.cancel_attendee_id'));
+                $total = $this->Attendee->find('all',array('conditions' => array('OR' => array('Attendee.cancel_count' => 0,'Cancel.created >' => $conference['Conference']['start_date'])),'contain' => $contain,'fields' => array('COUNT(Attendee.id) as total','SUM(Attendee.check_in_count) as checked_in','SUM(Attendee.cancel_count) as canceled'),'order' => array('Attendee.locality_id' => 'asc'),'group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
+                //$checked_in = $this->Attendee->find('all',array('conditions' => array('Attendee.check_in_count' => 1),'contain' => $contain,'fields' => 'COUNT(Attendee.id) as count','group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
+                //$cancel = $this->Attendee->find('all',array('conditions' => array('Attendee.cancel_count' => 1,'Cancel.created >' => $conference['Conference']['start_date']),'contain' => $contain,'fields' => 'COUNT(Attendee.id) as count','group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
+                $excused = $this->Attendee->find('all',array('conditions' => array('Attendee.id' => $canceled_excused,'Cancel.created >' => $conference['Conference']['start_date']),'contain' => $contain,'fields' => 'COUNT(Attendee.id) as count','group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
+                $remaining_registered = $this->Attendee->find('all',array('conditions' => array('OR' => array('Attendee.cancel_count' => 0,'AND' => array('Cancel.created >' => $conference['Conference']['start_date'],'Attendee.id NOT' => $canceled_excused))),'contain' => $contain,'fields' => array('COUNT(Attendee.id) as count','SUM(Attendee.rate) as total_charge'),'group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
+                
+                foreach ($total as $entry):
+                    $summaries[$entry['Locality']['id']] = $entry;
+                    $summaries[$entry['Locality']['id']][0]['excused'] = 0;
+                    $summaries[$entry['Locality']['id']][0]['remaining_registered'] = 0;
+                endforeach;
+                foreach ($excused as $entry):
+                    $summaries[$entry['Locality']['id']][0]['excused'] = $entry[0]['count'];
+                endforeach;
+                foreach ($remaining_registered as $entry):
+                    $summaries[$entry['Locality']['id']][0]['remaining_registered'] = $entry[0]['count'];
+                    $summaries[$entry['Locality']['id']][0]['total_charge'] = $entry[0]['total_charge'];
+                endforeach;
                 $this->set(compact('summaries'));
 	}
 
@@ -188,7 +211,7 @@ class AttendeesController extends AppController {
             $this->set('cancellations',$this->paginate());
         }
         
-/*
+/**
  * excuseCancellation method
  * 
  * @return void
@@ -223,7 +246,7 @@ class AttendeesController extends AppController {
 		$this->redirect(array('action' => 'cancel_report'));
         }
 
-/*
+/**
  * unexcuseCancellation method
  * 
  * @return void
@@ -297,7 +320,7 @@ class AttendeesController extends AppController {
 
                 $checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0)));
                 $high_school_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 1)));
-                $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5))));
+                $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5,9))));
                 $canceled_count = $this->Attendee->find('count',array('conditions' => array('Attendee.cancel_count >' => 0,'Cancel.created >' => $conference['Conference']['start_date'])));
                 $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0,'Attendee.cancel_count' => 0)));
                 

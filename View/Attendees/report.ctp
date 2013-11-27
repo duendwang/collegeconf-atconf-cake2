@@ -24,12 +24,12 @@
                 <td><?php echo h($attendee['Attendee']['comment']); ?>&nbsp;</td>
 		<td><?php echo h($attendee['Attendee']['created']); ?>&nbsp;</td>
 		<td><?php echo h($attendee['Attendee']['rate']); ?>&nbsp;</td>
+                <td><?php echo h($attendee['Attendee']['paid_at_conf']); ?>&nbsp;</td>
                 <td>
-                    <?php if (isset($attendee['CheckIn'][0])) echo h($attendee['CheckIn'][0]['timestamp']);
+                    <?php if (!empty($attendee['CheckIn']['id'])) echo h($attendee['CheckIn']['timestamp']);
                     else echo '';?> &nbsp;
                 </td>
-		<td><?php echo h($attendee['Attendee']['paid_at_conf']); ?>&nbsp;</td>
-		<?php if (isset($attendee['Cancel'])) {?>
+		<?php if (!empty($attendee['Cancel']['id'])) {?>
                 <td><?php echo h($attendee['Cancel']['created']); ?>&nbsp;</td>
 		<td><?php echo h($attendee['Cancel']['reason']); ?>&nbsp;</td>
                 <?php } ?>

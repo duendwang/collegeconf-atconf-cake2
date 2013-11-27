@@ -33,6 +33,66 @@ class AttendeesFinancesController extends AppController {
 	}
 
 /**
+ * replacement method
+ * 
+ * @return void
+ */
+
+        public function replacement() {
+            if ($this->request->is('post')) {
+                if (!empty($this->request->data['AttendeesFinance']['add_attendee_id']) && !empty($this->request->data['AttendeesFinance']['cancel_attendee_id'])) {
+                    $add_attendee = $this->AttendeesFinance->AddAttendee->find('first',array('conditions' => array('AddAttendee.id' => $this->request->data['AttendeesFinance']['add_attendee_id']),'recursive' => -1));
+                    $cancel_attendee = $this->AttendeesFinance->CancelAttendee->find('first',array('conditions' => array('CancelAttendee.id' => $this->request->data['AttendeesFinance']['cancel_attendee_id']),'recursive' => -1));
+                    
+                    $add_attendee_finance = $this->AttendeesFinance->find('first',array(
+                        'conditions' => array(
+                            'AttendeesFinance.add_attendee_id' => $this->request->data['AttendeesFinance']['add_attendee_id'],
+                        ),
+                        'contain' => array(
+                            'Finance'
+                        ),
+                        'recursive' => -1,
+                    ));
+                    
+                    if (empty($add_attendee_finance['AttendeesFinance']['cancel_attendee_id'])) {
+                        $this->request->data['AttendeesFinance']['id'] = $add_attendee_finance['AttendeesFinance']['id'];
+                        $this->request->data['Finance'] = array(
+                            'id' => $add_attendee_finance['Finance']['id'],
+                            'finance_type_id' => 5,
+                            'count' => null,
+                            'rate' => null,
+                            'charge' => null,
+                            'payment' => $add_attendee_finance['Finance']['payment'],
+                            'balance' => '0.00',
+                            'comment' => $add_attendee_finance['Finance']['comment']
+                        );
+                        $this->request->data['AddAttendee'] = array(
+                            'id' => $add_attendee['AddAttendee']['id'],
+                            'rate' => $cancel_attendee['CancelAttendee']['rate']
+                        );
+                        
+                        if ($this->AttendeesFinance->saveAssociated($this->request->data,array('validate' => false,'deep' => true))) {
+                            $this->Session->setFlash(__('Replacement has been saved'),'success');
+                            $this->redirect(array('action' => 'replacement'));
+                        } else {
+                            $this->Session->setFlash(__('Replacement could not be saved'),'failure');
+                        }
+                    } else {
+                        $this->Session->setFlash(__($add_attendee['Attendee']['name'].' is already replacing another attendee'),'failure');
+                    }
+                } else {
+                    $this->Session->setFlash(__('Both fields are required'),'failure');
+                }
+            }
+            $conference = $this->AttendeesFinance->AddAttendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->AttendeesFinance->AddAttendee->Conference->current_conference()),'recursive' => -1));
+            $add_attendeesfinances = $this->AttendeesFinance->find('list',array('conditions' => array('AttendeesFinance.add_attendee_id NOT' => null,'AttendeesFinance.cancel_attendee_id' => null,'Finance.receive_date >=' => $conference['Conference']['start_date'],'Finance.finance_type_id' => 3),'fields' => 'AttendeesFinance.add_attendee_id','recursive' => 2));
+            $excused_cancel_attendees_finances = $this->AttendeesFinance->find('list',array('conditions' => array('AttendeesFinance.cancel_attendee_id NOT' => null,'Finance.receive_date >=' => $conference['Conference']['start_date'],'Finance.finance_type_id' => 4),'fields' => 'AttendeesFinance.cancel_attendee_id','recursive' => 2));
+            $addAttendees = $this->AttendeesFinance->AddAttendee->find('list',array('conditions' => array('AddAttendee.id' => $add_attendeesfinances),'order' => 'AddAttendee.name'));
+            $cancelAttendees = $this->AttendeesFinance->CancelAttendee->find('list',array('conditions' => array('Cancel.created >' => $conference['Conference']['start_date'],'CancelAttendee.id NOT' => $excused_cancel_attendees_finances),'contain' => array('Cancel'),'order' => 'CancelAttendee.name'));
+            $this->set(compact('addAttendees','cancelAttendees'));
+        }
+
+/**
  * add method
  *
  * @return void

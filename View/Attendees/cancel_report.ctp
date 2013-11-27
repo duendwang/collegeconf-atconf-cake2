@@ -21,7 +21,7 @@
             <th><?php echo $this->Paginator->sort('rate'); ?></th>
             <th><?php echo $this->Paginator->sort('Cancel.created','Cancelled'); ?></th>
             <th><?php echo $this->Paginator->sort('Cancel.reason','Reason'); ?></th>
-            <?php /**<th class="actions"><?php echo __('Actions'); ?></th>**/?>
+            <th class="actions"><?php echo __('Actions'); ?></th>
 	</tr>
     <?php foreach ($cancellations as $cancellation): ?>
 	<tr>
@@ -40,11 +40,6 @@
                         echo $this->Form->postLink(__('Excuse Cancellation'), array('controller' => 'attendees', 'action' => 'excuse_cancellation', $cancellation['Attendee']['id']), null, __('Are you sure you want to excuse %s\'s cancellation?', $cancellation['Attendee']['name']));
                     }
                 } ?>
-                    
-                    
-                <?php /**<?php echo $this->Html->link(__('View'), array('action' => 'view', $attendee['Attendee']['id'])); ?>
-		<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $attendee['Attendee']['id'])); ?>
-		<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $attendee['Attendee']['id']), null, __('Are you sure you want to delete # %s?', $attendee['Attendee']['id'])); ?>**/?>
             </td>
 	</tr>
 <?php endforeach; ?>

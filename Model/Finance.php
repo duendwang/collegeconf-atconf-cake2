@@ -147,8 +147,8 @@ class Finance extends AppModel {
 			),
 		),
 		'charge' => array(
-			'money' => array(
-				'rule' => array('money'),
+			'numeric' => array(
+				'rule' => array('numeric'),
 				//'message' => 'Your custom message here',
 				'allowEmpty' => true,
 				'required' => false,
@@ -157,8 +157,8 @@ class Finance extends AppModel {
 			),
 		),
 		'payment' => array(
-			'money' => array(
-				'rule' => array('money'),
+			'numeric' => array(
+				'rule' => array('numeric'),
 				//'message' => 'Your custom message here',
 				'allowEmpty' => true,
 				'required' => false,
@@ -167,8 +167,8 @@ class Finance extends AppModel {
 			),
 		),
 		'balance' => array(
-			'money' => array(
-				'rule' => array('money'),
+			'numeric' => array(
+				'rule' => array('numeric'),
 				//'message' => 'Your custom message here',
 				'allowEmpty' => true,
 				'required' => false,

@@ -66,7 +66,12 @@
 			<?php echo h($lodging['Lodging']['capacity']); ?>
 			&nbsp;
 		</dd>
-		<dt><?php echo __('Room'); ?></dt>
+		<dt><?php echo __('Assigned'); ?></dt>
+		<dd>
+			<?php echo h($lodging['Lodging']['attendee_count']); ?>
+			&nbsp;
+		</dd>
+                <dt><?php echo __('Room'); ?></dt>
 		<dd>
 			<?php echo h($lodging['Lodging']['room']); ?>
 			&nbsp;
@@ -99,11 +104,12 @@
 	<table cellpadding = "0" cellspacing = "0">
 	<tr>
 		<th><?php echo __('Id'); ?></th>
-		<th><?php echo __('Conference Id'); ?></th>
 		<th><?php echo __('First Name'); ?></th>
 		<th><?php echo __('Last Name'); ?></th>
 		<th><?php echo __('Gender'); ?></th>
 		<th><?php echo __('Locality Id'); ?></th>
+                <th><?php echo __('Cancel Count'); ?></th>
+                <th><?php echo __('Check In'); ?></th>
 		<th><?php echo __('Campus Id'); ?></th>
 		<th><?php echo __('Lrc'); ?></th>
 		<th><?php echo __('Conf Contact'); ?></th>
@@ -113,15 +119,9 @@
 		<th><?php echo __('Status Id'); ?></th>
 		<th><?php echo __('Cell Phone'); ?></th>
 		<th><?php echo __('Email'); ?></th>
-		<th><?php echo __('City State'); ?></th>
-		<th><?php echo __('Lodging Id'); ?></th>
-		<th><?php echo __('Submitter'); ?></th>
 		<th><?php echo __('Rate'); ?></th>
 		<th><?php echo __('Paid At Conf'); ?></th>
 		<th><?php echo __('Comment'); ?></th>
-		<th><?php echo __('Amt Paid'); ?></th>
-		<th><?php echo __('Check Num'); ?></th>
-		<th><?php echo __('Paid Date'); ?></th>
 		<th><?php echo __('Creator Id'); ?></th>
 		<th><?php echo __('Created'); ?></th>
 		<th><?php echo __('Modifier Id'); ?></th>
@@ -133,11 +133,12 @@
 		foreach ($lodging['Attendee'] as $attendee): ?>
 		<tr>
 			<td><?php echo $attendee['id']; ?></td>
-			<td><?php echo $attendee['conference_id']; ?></td>
 			<td><?php echo $attendee['first_name']; ?></td>
 			<td><?php echo $attendee['last_name']; ?></td>
 			<td><?php echo $attendee['gender']; ?></td>
 			<td><?php echo $attendee['locality_id']; ?></td>
+                        <td><?php echo $attendee['cancel_count']; ?></td>
+                        <td><?php echo $attendee['CheckIn']['timestamp']; ?></td>
 			<td><?php echo $attendee['campus_id']; ?></td>
 			<td><?php echo $attendee['lrc']; ?></td>
 			<td><?php echo $attendee['conf_contact']; ?></td>
@@ -147,15 +148,9 @@
 			<td><?php echo $attendee['status_id']; ?></td>
 			<td><?php echo $attendee['cell_phone']; ?></td>
 			<td><?php echo $attendee['email']; ?></td>
-			<td><?php echo $attendee['city_state']; ?></td>
-			<td><?php echo $attendee['lodging_id']; ?></td>
-			<td><?php echo $attendee['submitter']; ?></td>
 			<td><?php echo $attendee['rate']; ?></td>
 			<td><?php echo $attendee['paid_at_conf']; ?></td>
 			<td><?php echo $attendee['comment']; ?></td>
-			<td><?php echo $attendee['amt_paid']; ?></td>
-			<td><?php echo $attendee['check_num']; ?></td>
-			<td><?php echo $attendee['paid_date']; ?></td>
 			<td><?php echo $attendee['creator_id']; ?></td>
 			<td><?php echo $attendee['created']; ?></td>
 			<td><?php echo $attendee['modifier_id']; ?></td>
