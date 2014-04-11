@@ -49,9 +49,10 @@ class Conference extends AppModel {
             if ($conference_id == null) {
                 $conference_id = $this->current_conference();
             }
-            $conference = $this->find('first',array('conditions' => array('Conference.id' => $conference),'fields' => array('Conference.start_date','Conference.code'),'recursive' => -1));
+            $conference = $this->find('first',array('conditions' => array('Conference.id' => $conference_id),'fields' => array('Conference.start_date','Conference.conference_location_id','Conference.code'),'recursive' => -1));
 
             $conference_info['code'] = $conference['Conference']['code'];
+            $conference_info['location'] = $conference['Conference']['conference_location_id'];
             $conference_info['start_date'] = strtotime($conference['Conference']['start_date']);
             $conference_info['end_date'] = strtotime('+2 days',$conference_info['start_date']);
             return $conference_info;

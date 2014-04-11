@@ -73,4 +73,17 @@ class AppController extends Controller {
         }
         return false;
     }**/
+    
+    function autocomplete() {
+        if ($this->RequestHandler->isAjax() && $this->RequestHandler->isPost()) {
+            $fields = explode(",",$this->params['form']['fields']);
+            $results = $this->{$this->params['form']['model']}->findAll($this->params['form']['search'].' LIKE \'%'.$this->params['form']['query'].'%\'',$fields,$this->params['form']['search'].' ASC',$this->params['form']['numresult']); 
+            $this->set('results',$results);
+            $this->set('fields',$fields);
+            $this->set('model',$this->params['form']['model']);
+            $this->set('input_id',$this->params['form']['rand']);
+            $this->set('search',$this->params['form']['search']);
+            $this->render('autocomplete','ajax','/common/autocomplete');                
+        }
+    } 
 }

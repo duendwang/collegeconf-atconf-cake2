@@ -774,3 +774,14 @@ pre {
     background-color: #FFBABA;
     background-image: url('../img/flashmsg/error.png');
 }
+
+//Javascript autocomplete
+.autocomplete_live {
+    background:#F0F0F0 none repeat scroll 0%;
+    clear:both;
+    cursor:pointer;
+    display:block;
+    margin:0px;
+    padding:0px;
+    z-index:9999;
+}

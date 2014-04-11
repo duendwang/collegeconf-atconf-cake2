@@ -59,7 +59,7 @@ class AttendeesController extends AppController {
  * @return void
  */
         public function report($locality = null) {
-            $this->Attendee->recursive = 0;
+                $this->Attendee->recursive = 0;
                 $contain = array_merge($this->Attendee->contain,array(
                     'AttendeeFinanceAdd' => array(
                         'fields' => array(
@@ -68,15 +68,14 @@ class AttendeesController extends AppController {
                         'CancelAttendee' => array(
                             'fields' => 'CancelAttendee.name'
                         )
-                    ),
-                    'AttendeeFinanceCancel'
+                    )
                 ));
                 
                 $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => 0));
                 
                 if(isset($locality)) {
                     $this->paginate = array(
-                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('AND' => array('Cancel.created >' => $conference['Conference']['start_date'],'Cancel.replaced' => ''),'Attendee.cancel_count' => 0)),
+                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('AND' => array('Cancel.created >' => date('Y-m-d h:i:s',strtotime($conference['Conference']['start_date'])),'Cancel.replaced' => null),'Attendee.cancel_count' => 0)),
                         'contain' => $contain,
                         'limit' => 100,
                     );
@@ -93,8 +92,6 @@ class AttendeesController extends AppController {
                     }
                     if (!empty($attendee['Cancel']['replaced'])) {
                         $attendee['Cancel']['reason'] = $attendee['Cancel']['reason'].'; Replaced by '.$attendee['Cancel']['replaced'];
-                    } elseif (!empty($attendee['AttendeeFinanceCancel'])) {
-                        $attendee['Cancel']['reason'] = $attendee['Cancel']['reason'].'excused';
                     }
                     if (!empty($attendee['AttendeeFinanceAdd'])) {
                         foreach ($attendee['AttendeeFinanceAdd'] as &$attendee_finance):
@@ -116,35 +113,15 @@ class AttendeesController extends AppController {
  */
 	public function summary() {
                 $this->Attendee->recursive = 0;
-                $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => 0));
                 $contain = array(
                     'Locality' => array(
                         'fields' => array(
                             'Locality.name'
                         )
-                    ),
-                    'Cancel',
+                    )
                 );
                 
-                $canceled_excused = $this->Attendee->AttendeeFinanceCancel->find('list',array('conditions' => array('AttendeeFinanceCancel.cancel_attendee_id NOT' => null),'fields' => 'AttendeeFinanceCancel.cancel_attendee_id'));
-                $total = $this->Attendee->find('all',array('conditions' => array('OR' => array('Attendee.cancel_count' => 0,'Cancel.created >' => $conference['Conference']['start_date'])),'contain' => $contain,'fields' => array('COUNT(Attendee.id) as total','SUM(Attendee.check_in_count) as checked_in','SUM(Attendee.cancel_count) as canceled'),'order' => array('Attendee.locality_id' => 'asc'),'group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
-                //$checked_in = $this->Attendee->find('all',array('conditions' => array('Attendee.check_in_count' => 1),'contain' => $contain,'fields' => 'COUNT(Attendee.id) as count','group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
-                //$cancel = $this->Attendee->find('all',array('conditions' => array('Attendee.cancel_count' => 1,'Cancel.created >' => $conference['Conference']['start_date']),'contain' => $contain,'fields' => 'COUNT(Attendee.id) as count','group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
-                $excused = $this->Attendee->find('all',array('conditions' => array('Attendee.id' => $canceled_excused,'Cancel.created >' => $conference['Conference']['start_date']),'contain' => $contain,'fields' => 'COUNT(Attendee.id) as count','group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
-                $remaining_registered = $this->Attendee->find('all',array('conditions' => array('OR' => array('Attendee.cancel_count' => 0,'AND' => array('Cancel.created >' => $conference['Conference']['start_date'],'Attendee.id NOT' => $canceled_excused))),'contain' => $contain,'fields' => array('COUNT(Attendee.id) as count','SUM(Attendee.rate) as total_charge'),'group' => 'Attendee.locality_id','order' => 'Locality.name','recursive' => -1));
-                
-                foreach ($total as $entry):
-                    $summaries[$entry['Locality']['id']] = $entry;
-                    $summaries[$entry['Locality']['id']][0]['excused'] = 0;
-                    $summaries[$entry['Locality']['id']][0]['remaining_registered'] = 0;
-                endforeach;
-                foreach ($excused as $entry):
-                    $summaries[$entry['Locality']['id']][0]['excused'] = $entry[0]['count'];
-                endforeach;
-                foreach ($remaining_registered as $entry):
-                    $summaries[$entry['Locality']['id']][0]['remaining_registered'] = $entry[0]['count'];
-                    $summaries[$entry['Locality']['id']][0]['total_charge'] = $entry[0]['total_charge'];
-                endforeach;
+                $summaries = $this->Attendee->find('all',array('contain' => $contain,'fields' => array('Attendee.locality_id','COUNT(Attendee.id) as count','SUM(rate) as total_charge'),'order' => array('Attendee.locality_id' => 'asc'),'group' => 'Attendee.locality_id','order' => 'Locality.name'));
                 $this->set(compact('summaries'));
 	}
 
@@ -211,7 +188,7 @@ class AttendeesController extends AppController {
             $this->set('cancellations',$this->paginate());
         }
         
-/**
+/*
  * excuseCancellation method
  * 
  * @return void
@@ -246,7 +223,7 @@ class AttendeesController extends AppController {
 		$this->redirect(array('action' => 'cancel_report'));
         }
 
-/**
+/*
  * unexcuseCancellation method
  * 
  * @return void
@@ -320,12 +297,72 @@ class AttendeesController extends AppController {
 
                 $checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0)));
                 $high_school_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 1)));
-                $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5,9))));
+                $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5))));
                 $canceled_count = $this->Attendee->find('count',array('conditions' => array('Attendee.cancel_count >' => 0,'Cancel.created >' => $conference['Conference']['start_date'])));
                 $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0,'Attendee.cancel_count' => 0)));
                 
                 //Construct time breakdowns
                 $time_slots = array(
+                    //Anaheim time slots
+                    'FriD' => array(
+                        'name' => 'Friday Dinner',
+                        'start' => date('Y-m-d H:i:s',strtotime('12:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('19:00:00',$start_date)),
+                    ),
+                    'FriPM' => array(
+                        'name' => 'Friday Meeting',
+                        'start' => date('Y-m-d H:i:s',strtotime('19:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('21:30:00',$start_date)),
+                    ),
+                    'FriNight' => array(
+                        'name' => 'Friday Night',
+                        'start' => date('Y-m-d H:i:s',strtotime('21:30:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+1 day 06:00:00',$start_date)),
+                    ),
+                    'SatAM' => array(
+                        'name' => 'Saturday Morning Meeting',
+                        'start' => date('Y-m-d H:i:s',strtotime('+1 day 06:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+1 day 11:00:00',$start_date)),
+                    ),
+                    'SatL' => array(
+                        'name' => 'Saturday Lunch',
+                        'start' => date('Y-m-d H:i:s',strtotime('+1 day 11:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+1 day 13:00:00',$start_date)),
+                    ),
+                    'SatA' => array(
+                        'name' => 'Saturday Afternoon',
+                        'start' => date('Y-m-d H:i:s',strtotime('+1 day 13:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+1 day 17:00:00',$start_date)),
+                    ),
+                    'SatD' => array(
+                        'name' => 'Saturday Dinner',
+                        'start' => date('Y-m-d H:i:s',strtotime('+1 day 17:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+1 day 19:00:00',$start_date)),
+                    ),
+                    'SatPM' => array(
+                        'name' => 'Saturday Evening Meeting',
+                        'start' => date('Y-m-d H:i:s',strtotime('+1 day 19:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+1 day 21:00:00',$start_date)),
+                    ),
+                    'SatNight' => array(
+                        'name' => 'Saturday Night',
+                        'start' => date('Y-m-d H:i:s',strtotime('+1 day 21:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+2 day 06:00:00',$start_date)),
+                    ),
+                    'LDAM' => array(
+                        'name' => 'Lord\'s Day Morning Meeting',
+                        'start' => date('Y-m-d H:i:s',strtotime('+2 day 06:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+2 day 11:00:00',$start_date)),
+                    ),
+                    'LDL' => array(
+                        'name' => 'Lord\'s Day Lunch',
+                        'start' => date('Y-m-d H:i:s',strtotime('+2 day 11:00:00',$start_date)),
+                        'end' => date('Y-m-d H:i:s',strtotime('+2 day 13:00:00',$start_date)),
+                    ),
+                );
+                
+                /**$time_slots = array(
+                    //Big Bear time slots
                     'FriPM' => array(
                         'name' => 'Friday Meeting',
                         'start' => date('Y-m-d H:i:s',strtotime('12:00:00',$start_date)),
@@ -371,7 +408,7 @@ class AttendeesController extends AppController {
                         'start' => date('Y-m-d H:i:s',strtotime('+2 day 09:00:00',$start_date)),
                         'end' => date('Y-m-d H:i:s',strtotime('+2 day 13:00:00',$start_date)),
                     ),
-                );
+                );**/
                 
                 foreach($time_slots as &$time_slot):
                     $time_slot['count'] = $this->Attendee->CheckIn->find('count',array('conditions' => array('CheckIn.timestamp >' => $time_slot['start'],'CheckIn.timestamp <' => $time_slot['end'])));
@@ -544,7 +581,6 @@ class AttendeesController extends AppController {
 /**
  * requirementCheck method
  *
-
  * @return true
  */
 
@@ -624,8 +660,8 @@ class AttendeesController extends AppController {
                             //Save Onsite Registration entry
                             $onsite = array(
                                 'attendee_id' => $this->Attendee->id,
-                                'locality_id' => $this->request->data['Attendee']['locality_id'],
-                                'registration' => 0,);
+                                'confernece_id' => $this->request->data['Attendee']['conference_id'],
+                                'registration' => null,);
                             $this->Attendee->OnsiteRegistration->create($onsite);
                             $this->Attendee->OnsiteRegistration->save($onsite);
                             //$this->Session->setFlash(__('Thank you for registering. Your total cost is.'),'success');
@@ -634,15 +670,18 @@ class AttendeesController extends AppController {
                             $this->Session->setFlash(__('Your information could not be saved. Please contact a serving one.'),'failure');
 			}
 		}
-                $three_days_ago = date('Y-m-d', strtotime('-4 days'));
-                $current_conference = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.start_date < NOW()',"Conference.start_date >= '$three_days_ago'")));
-                $localities = $this->Attendee->Locality->find('list', array('conditions' => array('Locality.id >' => '3'/**,'Locality.id NOT' => '44'**/),'fields' => 'Locality.city'));
+                $conferences = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference())));
+                $localities = $this->Attendee->Locality->find('list', array('conditions' => array('Locality.id >' => '3'/**,'Locality.id NOT' => '44'**/),'fields' => 'Locality.name'));
                 $campuses = $this->Attendee->Campus->find('list');
 		$statuses = $this->Attendee->Status->find('list', array(/**'conditions' => array('Status.id >' => 1), **/'order' => 'Status.id'));
-		$this->set(compact('current_conference', 'localities', 'campuses', 'statuses'));
-                if($this->Session->read('Attendee.selfadd') == !null) $this->request->data = $this->Session->read('Attendee.selfadd');
-                $this->Session->delete('Attendee.selfadd');
+		$this->set(compact('conferences', 'localities', 'campuses', 'statuses'));
                 
+                if($this->Session->read('Attendee.selfadd') && $this->referer() == Router::url(array('controller' => 'attendees', 'action' => 'verify'))) {
+                    $this->request->data = $this->Session->read('Attendee.selfadd');
+                    $this->Session->delete('Attendee.selfadd');
+                } elseif($this->Session->read('Attendee.selfadd')) {
+                    $this->Session->delete('Attendee.selfadd');
+                }
 	}
 
 /**
@@ -669,11 +708,11 @@ class AttendeesController extends AppController {
                             $this->Session->delete('Attendee.selfadd');
                             $this->Session->delete('Attendee.matches');
                             $attendee = $this->Attendee->read(null,$this->request->data['Attendee']['Match']);
-                            if(in_array($attendee['Attendee']['PT'],array(null,0))) {
+                            if(in_array($attendee['Attendee']['part_time_registration_count'],array(null,0))) {
                                 $this->Session->setFlash(__('You are registered full time and cannot change any information on this site. Please contact a serving one to change any information or to check in.'),'warning');
                                 $this->redirect(array('controller' => 'pages','action' => 'display','registration'));
                             } else {
-                                //$this->redirect(array('action' => 'selfedit',$this->request->data['Attendee']['Match']));
+                                $this->redirect(array('action' => 'selfedit',$this->request->data['Attendee']['Match']));
                                 $this->Session->setFlash(__('We are not set up yet to modify existing registrations. Please see a serving one to change your registration. Sorry for the inconvenience.'),'warning');
                                 $this->redirect(array('controller' => 'pages','action' => 'display','registration'));
                             }
@@ -687,8 +726,8 @@ class AttendeesController extends AppController {
                                     //Save Onsite Registration entry
                                     $onsite = array(
                                         'attendee_id' => $this->Attendee->id,
-                                        'locality_id' => $this->request->data['Attendee']['locality_id'],
-                                        'registration' => 0,);
+                                        'conference_id' => $this->Attendee->field('conference_id'),
+                                        'registration' => null,);
                                     $this->Attendee->OnsiteRegistration->create($onsite);
                                     $this->Attendee->OnsiteRegistration->save($onsite);
                                     //$this->Session->delete('Attendee.selfadd');
@@ -705,9 +744,18 @@ class AttendeesController extends AppController {
                             $attendee['Attendee']['pt_meetings'] = $this->Session->read('Attendee.selfadd.Attendee.pt_meetings');
                             $attendee['Attendee']['pt_meals'] = $this->Session->read('Attendee.selfadd.Attendee.pt_meals');
                             $attendee['Attendee']['pt_misc'] = $this->Session->read('Attendee.selfadd.Attendee.pt_misc');
-                            $this->loadModel('Rate');
-                            $rates = $this->Rate->find('list',array('fields' => 'Rate.cost'));
-                            $onsite = array('registration' => '1');
+                            debug($attendee);
+                            
+                            $conference_info = $this->Attendee->Conference->conference_info();
+                            $rate_structure = $this->Attendee->Conference->ConferenceLocation->Rate->find('all',array('conditions' => array('Rate.conference_location_id' => $conference_info['location']),'recursive' => -1));
+                            foreach($rate_structure as $structure):
+                                $rates[$structure['Rate']['rate_type_id']] = array(
+                                    'cost' => $structure['Rate']['cost'],
+                                    'late_fee' => $structure['Rate']['latefee_applies'],
+                                );
+                            endforeach;
+                            
+                            $onsite = array('registration' => date('Y-m-d h:i:s'));
                             $table = '3';
                             $part_time_mtgs = array(
                                 'fri' => 'fri_mtg',
@@ -726,7 +774,7 @@ class AttendeesController extends AppController {
                                 case ('ft_lodging'):
                                     $onsite = array_merge($onsite,array('need_hospitality' => '1'));
                                 case ('ft_nolodging'):
-                                    $cost = $rates[1] + $rates[8];
+                                    $cost = $rates[1]['cost'] + $rates[8]['cost']*$rates[1]['late_fee'];
                                     $onsite = array_merge($onsite,array('need_badge' => '1'));
                                     $table = '4';
                                     break;
@@ -744,13 +792,12 @@ class AttendeesController extends AppController {
                                             break;
                                         case ('3'):
                                             $cost = '65';
-                                            $this->Attendee->set(array('PT' => '1'));
                                             $part_time = 1;
                                             break;
                                         case ('2'):
                                         case ('1'):
                                             $this->Attendee->set(array('PT' => '1'));
-                                            $cost = $rates[9]*count(array_filter($attendee['Attendee']['pt_meals'])) + $rates[10]*count(array_filter($attendee['Attendee']['pt_misc']));
+                                            $cost = $rates[9]['cost']*count(array_filter($attendee['Attendee']['pt_meals'])) + $rates[10]['cost']*count(array_filter($attendee['Attendee']['pt_misc']));
                                             $part_time = 1;
                                             break;
                                         }
@@ -785,9 +832,7 @@ class AttendeesController extends AppController {
                                     $this->Attendee->PartTimeRegistration->save($part_time);
                                 } else {
                                     foreach($attendee['PartTimeRegistrations'] as $ptreg):
-                                        debug($ptreg);
                                     endforeach;
-                                    exit;
                                 }
                             }
                             $this->Attendee->set(array('rate' => $cost));
@@ -807,7 +852,7 @@ class AttendeesController extends AppController {
                             break;
                         case ('Edit my information.'):
                             //Case when new attendee needs to edit entered information.
-                            //$this->redirect(array('action' => 'selfedit',$id));
+                            $this->redirect(array('action' => 'selfedit',$id));
                             $this->Session->setFlash(__('We are not set up yet to modify existing registrations. Please see a serving one to change your registration. Sorry for the inconvenience.'),'warning');
                             $this->redirect(array('controller' => 'pages','action' => 'display','registration'));
                             break;
@@ -849,8 +894,8 @@ class AttendeesController extends AppController {
                     else $attendee['Attendee']['booklet'] = 'No';
                     $attendee['Attendee']['meetings'] = implode(', ',$attendee['Attendee']['meetings']);
                     $attendee['Attendee']['meals'] = implode(', ',$attendee['Attendee']['meals']);
-if($attendee['Attendee']['gender'] === 'B') $attendee['Attendee']['gender'] = 'Male';
-elseif($attendee['Attendee']['gender'] === 'S') $attendee['Attendee']['gender'] = 'Female';
+                    if($attendee['Attendee']['gender'] === 'B') $attendee['Attendee']['gender'] = 'Male';
+                    elseif($attendee['Attendee']['gender'] === 'S') $attendee['Attendee']['gender'] = 'Female';
                     $this->set(compact('attendee'));
                 } else {
                     $matches = $this->Session->read('Attendee.matches');
@@ -1106,4 +1151,29 @@ elseif($attendee['Attendee']['gender'] === 'S') $attendee['Attendee']['gender'] 
 		$this->Session->setFlash(__('Attendee was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
+        
+        public function find() {
+  $this->Attendee->Campus->recursive = -1;
+  if ($this->request->is('ajax')) {
+    $this->autoRender = false;
+    $results = $this->Attendee->Campus->find('all', array(
+      'fields' => array('Campus.name'),
+      //remove the leading '%' if you want to restrict the matches more
+      'conditions' => array('OR' => array(
+          'Campus.name LIKE ' => '%' . $this->request->query['q'] . '%',
+          'Campus.code LIKE ' => '%' . $this->request->query['q'] . '%',
+      ))
+          
+    ));
+    foreach($results as $result) {
+      echo $result['Campus']['name'] . "\n";
+    }
+ 
+  } else {
+  	//if the form wasn't submitted with JavaScript
+    //set a session variable with the search term in and redirect to index page
+    $this->Session->write('campusName',$this->request->data['Campus']['name']);
+    $this->redirect(array('action' => 'index'));
+  }
+}
 }

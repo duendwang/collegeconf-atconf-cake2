@@ -62,7 +62,7 @@ class LodgingsController extends AppController {
 		if (!$this->Lodging->exists($id)) {
 			throw new NotFoundException(__('Invalid lodging'));
 		}
-		$options = array('conditions' => array('Lodging.' . $this->Lodging->primaryKey => $id),'contain' => array('Attendee' => array('CheckIn')));
+		$options = array('conditions' => array('Lodging.' . $this->Lodging->primaryKey => $id));
 		$this->set('lodging', $this->Lodging->find('first', $options));
 	}
 

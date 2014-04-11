@@ -28,12 +28,14 @@
 		echo $this->Html->meta('icon');
 
 		echo $this->Html->css('collegeconf');
+                echo $this->Html->css('jquery.autocomplete');
                 
                 echo $this->fetch('meta');
 		echo $this->fetch('css');
 		echo $this->fetch('script');
 
                 echo $this->Html->script('jquery.min'); // Include jQuery library
+                echo $this->Html->script('jquery.autocomplete.min.js');
                 
                 echo $this->Html->script('sorttable'); // Include sorttable library
                 

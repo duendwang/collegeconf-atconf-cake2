@@ -181,4 +181,25 @@ class CampusesController extends AppController {
 		$this->Session->setFlash(__('Campus was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
+        
+        public function find() {
+  $this->Company->recursive = -1;
+  if ($this->request->is('ajax')) {
+    $this->autoRender = false;
+    $results = $this->Company->find('all', array(
+      'fields' => array('Company.name'),
+      //remove the leading '%' if you want to restrict the matches more
+      'conditions' => array('Company.name LIKE ' => '%' . $this->request->query['q'] . '%')
+    ));
+    foreach($results as $result) {
+      echo $result['Company']['name'] . "\n";
+    }
+ 
+  } else {
+  	//if the form wasn't submitted with JavaScript
+    //set a session variable with the search term in and redirect to index page
+    $this->Session->write('companyName',$this->request->data['Company']['name']);
+    $this->redirect(array('action' => 'index'));
+  }
+}
 }

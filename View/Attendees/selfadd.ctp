@@ -12,10 +12,8 @@
     </style>
 <?php echo $this->Form->create('Attendee'); ?>
 	<h2><?php echo 'Attendee On-site Registration'; ?></h2>
-        <?php echo $this->Form->hidden('conference_id', array('default' => $current_conference,'label' => false));
-        echo $this->Form->hidden('barcode', array('value'=>'A000001'));
-        echo $this->Form->hidden('add', array('label' => false));
-        echo $this->Form->hidden('rate', array('label' => false));?>
+        <?php echo $this->Form->input('conference_id', array('hidden' => true,'label' => false,'div' => false));
+        //echo $this->Form->hidden('rate', array('label' => false));?>
         
         <h4>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             Please fill out the form completely. All fields are required. You will only be contacted for conference-related matters.</h4><br>
@@ -134,3 +132,12 @@
 		<li><?php echo $this->Html->link(__('New Part Time Registration'), array('controller' => 'part_time_registrations', 'action' => 'add')); **/?> </li>
 	</ul>
 </div>-->
+<?php /**
+<script>
+$(document).ready(function(){  
+    $("AttendeeCampusId").autocomplete("/Attendees/find.json", {
+    minChars: 3
+    });
+  });
+</script>
+ **/?>

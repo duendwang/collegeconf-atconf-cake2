@@ -27,13 +27,13 @@
                 <p><?php echo $this->Html->link(__('Check in attendee'), array('controller' => 'checkIns', 'action' => 'add')); ?></p>
 		<p><?php echo $this->Html->link(__('Add new attendee'), array('controller' => 'attendees', 'action' => 'add')); ?></p>
 		<p><?php echo $this->Html->link(__('Cancel attendee'), array('controller' => 'cancels', 'action' => 'add')); ?></p>
-                <p><?php echo $this->Html->link(__('Process replacements'), array('controller' => 'attendees_finances', 'action' => 'replacement')); ?></p>
+                <?php /**<p><?php echo $this->Html->link(__('Process replacements'), array('controller' => 'attendees', 'action' => 'replacement')); ?></p>**/?>
                 <p><?php echo $this->Html->link(__('Enter finances'), array('controller' => 'finances', 'action' => 'add')); ?></p>
 		<p><?php echo $this->Html->link(__('View lodgings'), array('controller' => 'lodgings', 'action' => 'capacities')); ?></p>
-                <?php /**<p><?php echo $this->Html->link(__('Badges'), array('controller' => 'onsiteRegistrations', 'action' => 'badges')); ?></p>**/?>
-                <?php /**<p><?php echo $this->Html->link(__('Cashier'), array('controller' => 'onsiteRegistrations', 'action' => 'cashier')); ?></p>**/?>
+                <p><?php echo $this->Html->link(__('Badges'), array('controller' => 'onsiteRegistrations', 'action' => 'badges')); ?></p>
+                <p><?php echo $this->Html->link(__('Cashier'), array('controller' => 'onsiteRegistrations', 'action' => 'cashier')); ?></p>
                 <?php /**<p><?php echo $this->Html->link(__('CC form processing'), array('controller' => 'attendees', 'action' => 'cc_desk')); ?></p>**/?>
-		<?php /**<p><?php echo $this->Html->link(__('Attendee self registration'), array('action' => 'display','registration')); ?></p>**/?>
+		<p><?php echo $this->Html->link(__('Attendee self registration'), array('action' => 'display','registration')); ?></p>
             </td>
             <td style="padding-left:2em">
                 <p><?php echo $this->Html->link(__('Conference contacts'), array('controller' => 'attendees', 'action' => 'cc_report')); ?></p>
