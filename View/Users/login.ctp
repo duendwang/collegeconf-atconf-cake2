@@ -21,10 +21,10 @@
     </fieldset>
 <?php echo $this->Form->end(__('Login'));?>
 </div>
-<?php /**<div class="actions">
+<div class="actions">
 	<h3><?php echo __('Actions'); ?></h3>
 	<ul>
 
 		<li><?php echo $this->Html->link(__('On-site Registration'), array('controller' => 'pages', 'action' => 'display','registration')); ?></li>
   </ul>
-</div>**/?>
+</div>

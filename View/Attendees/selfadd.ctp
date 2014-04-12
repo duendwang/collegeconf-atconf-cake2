@@ -29,7 +29,7 @@
 		</tr>
 		<tr>
 			<td width=50></td>
-			<td><?php echo $this->Form->input('cell_phone',array('label' => 'Cell Phone (xxx-xxx-xxxx)'));?></td>
+			<td><?php echo $this->Form->input('cell_phone',array('label' => 'Cell Phone'));?></td>
 			<td><?php echo $this->Form->input('email');?></td>
 			<?php /**<td><?php echo $this->Form->input('city_state', array('label' => 'City, State of Residence'));?></td>**/?>
 		</tr>

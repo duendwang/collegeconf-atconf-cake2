@@ -53,7 +53,7 @@ if(!empty($options)) {?>
                     </dd>
                     <dt><?php echo __('Locality'); ?></dt>
                     <dd>
-			<?php echo h($attendee['Locality']['city']); ?>
+			<?php echo h($attendee['Locality']['name']); ?>
 			&nbsp;
                     </dd>
                     <dt><?php echo __('Status'); ?></dt>
@@ -101,12 +101,12 @@ if(!empty($options)) {?>
 
 <?php } elseif (!empty($confirm)) {?>
     <h2>Thank you for your registration!</h2>
-    <?php if($confirm['table'] !== '4') echo '<h3 style="font-size: 130%; padding-left:3em">Please see a serving one for your temporary name badges and to make sure nothing else is needed from you at this station.</h3>';
+    <?php if($confirm['table'] !== '4') echo '<h3 style="font-size: 130%; padding-left:3em">Please see a serving one for your temporary name badge and to make sure nothing else is needed from you at this station.</h3>';
     else echo '<h3 style="font-size: 130%; padding-left:3em">Please see a serving one to make sure nothing else is needed from you at this station.</h3>'; ?>
     <br><br>
     
     <h3 style="text-align:center">Based on your selections, your cost for this conference is <span style="color: #FF0099">$<?php echo h($confirm['cost']);?></span>.</h3><br>
-    <?php if($confirm['table'] !== '0') :?><h3 style="text-align:center">Please go to <span style="color: #FF0099">table <?php echo h($confirm['table']);?></span> to continue your registration.</h3><?php endif; ?><br>
+    <?php if($confirm['table'] !== '0') :?><h3 style="text-align:center">Please go to the <span style="color: #FF0099"><?php echo h($confirm['table']);?> station</span> to continue your registration.</h3><?php endif; ?><br>
 <?php echo $this->Form->submit(__('OK'),array('name' => 'Submit'));
 }
 $this->Form->end();?>

@@ -26,7 +26,7 @@
                 <td>
 			<?php echo $this->Html->link($attendee['Attendee']['last_name'], array('action' => 'badges', $attendee['Attendee']['id'])); ?>
 		</td>
-                <td><?php echo h($attendee['Attendee']['Locality']['city']); ?>&nbsp;</td>
+                <td><?php echo h($attendee['Attendee']['Locality']['name']); ?>&nbsp;</td>
             </tr>
         <?php endforeach;?>
         </table>
@@ -42,10 +42,10 @@
                 <tr>
                     <td>
                         <h4 style="font-size:130%;font-weight:bold"><?php echo $this->Form->label($current_attendee['Attendee']['first_name'].' '.$current_attendee['Attendee']['last_name']);
-                        echo $this->Form->hidden('id',array('label' => false,'default' => $current_attendee['OnsiteRegistration'][0]['id']));?>
+                        echo $this->Form->hidden('id',array('label' => false,'default' => $current_attendee['OnsiteRegistration']['id']));?>
                     </td>
                     <td>
-                        <h4 style="font-size:130%;font-weight:bold"><?php echo $this->Form->label($current_attendee['Locality']['city']);?></h4><br>
+                        <h4 style="font-size:130%;font-weight:bold"><?php echo $this->Form->label($current_attendee['Locality']['name']);?></h4><br>
                     </td>
                 </tr>
                 <tr>

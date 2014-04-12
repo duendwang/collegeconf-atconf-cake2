@@ -38,7 +38,7 @@
             </tr>
             <tr>
                 <td></td>
-		<td><?php echo $this->Form->input('cell_phone',array('label' => 'Cell Phone (XXX-XXX-XXXX)'));?></td>
+		<td><?php echo $this->Form->input('cell_phone',array('label' => 'Cell Phone'));?></td>
 		<td><?php echo $this->Form->input('email');?></td>
             </tr>
             <tr>

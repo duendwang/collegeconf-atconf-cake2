@@ -26,7 +26,7 @@
                 <td>
 			<?php echo $this->Html->link($attendee['Attendee']['last_name'], array('action' => 'cashier', $attendee['Attendee']['id'])); ?>
 		</td>
-                <td><?php echo h($attendee['Attendee']['Locality']['city']); ?>&nbsp;</td>
+                <td><?php echo h($attendee['Attendee']['Locality']['name']); ?>&nbsp;</td>
             </tr>
         <?php endforeach;?>
         </table>
@@ -48,7 +48,7 @@
             <table style="margin-left:3em" class="white">
                 <tr>
                     <td colspan="4" style="text-align: center">
-                        <h4 style="font-size:130%;font-weight:bold"><?php echo $this->Form->label($locality[0]['Locality']['city']);
+                        <h4 style="font-size:130%;font-weight:bold"><?php echo $this->Form->label($locality[0]['Locality']['name']);
                         echo $this->Form->hidden('locality_id',array('label' => false,'default' => $locality[0]['Locality']['id']));
                         echo $this->Form->hidden('timestamp',array('label' => false));?></h4>
                     </td>
@@ -89,7 +89,7 @@
                         echo $this->Form->hidden('timestamp',array('label' => false));?></h4>
                     </td>
                     <td colspan="2" style="text-align: center">
-                        <h4 style="font-size:130%;font-weight:bold"><?php echo $this->Form->label($current_attendee['Locality']['city']);?></h4><br>
+                        <h4 style="font-size:130%;font-weight:bold"><?php echo $this->Form->label($current_attendee['Locality']['name']);?></h4><br>
                     </td>
                 </tr>
                 <tr>

@@ -570,7 +570,7 @@ class AttendeesController extends AppController {
                 $conferences = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference())));
                 $localities = $this->Attendee->Locality->find('list');
 		$campuses = $this->Attendee->Campus->find('list');
-		$statuses = $this->Attendee->Status->find('list', array('conditions' => array('Status.id >' => 1), 'order' => 'Status.id'));
+		$statuses = $this->Attendee->Status->find('list', array(/**'conditions' => array('Status.id >' => 1),**/ 'order' => 'Status.id'));
 		$lodgings = $this->Attendee->Lodging->find('list');
 		//$creators = $this->Attendee->Creator->find('list');
 		//$modifiers = $this->Attendee->Modifier->find('list');
@@ -660,7 +660,7 @@ class AttendeesController extends AppController {
                             //Save Onsite Registration entry
                             $onsite = array(
                                 'attendee_id' => $this->Attendee->id,
-                                'confernece_id' => $this->request->data['Attendee']['conference_id'],
+                                'conference_id' => $this->request->data['Attendee']['conference_id'],
                                 'registration' => null,);
                             $this->Attendee->OnsiteRegistration->create($onsite);
                             $this->Attendee->OnsiteRegistration->save($onsite);
@@ -726,7 +726,7 @@ class AttendeesController extends AppController {
                                     //Save Onsite Registration entry
                                     $onsite = array(
                                         'attendee_id' => $this->Attendee->id,
-                                        'conference_id' => $this->Attendee->field('conference_id'),
+                                        'conference_id' => $this->Session->read('Attendee.selfadd.conference_id'),
                                         'registration' => null,);
                                     $this->Attendee->OnsiteRegistration->create($onsite);
                                     $this->Attendee->OnsiteRegistration->save($onsite);
@@ -744,7 +744,6 @@ class AttendeesController extends AppController {
                             $attendee['Attendee']['pt_meetings'] = $this->Session->read('Attendee.selfadd.Attendee.pt_meetings');
                             $attendee['Attendee']['pt_meals'] = $this->Session->read('Attendee.selfadd.Attendee.pt_meals');
                             $attendee['Attendee']['pt_misc'] = $this->Session->read('Attendee.selfadd.Attendee.pt_misc');
-                            debug($attendee);
                             
                             $conference_info = $this->Attendee->Conference->conference_info();
                             $rate_structure = $this->Attendee->Conference->ConferenceLocation->Rate->find('all',array('conditions' => array('Rate.conference_location_id' => $conference_info['location']),'recursive' => -1));
@@ -756,7 +755,7 @@ class AttendeesController extends AppController {
                             endforeach;
                             
                             $onsite = array('registration' => date('Y-m-d h:i:s'));
-                            $table = '3';
+                            $table = 'Cashier';
                             $part_time_mtgs = array(
                                 'fri' => 'fri_mtg',
                                 'satm' => 'sat_mtg1',
@@ -776,7 +775,7 @@ class AttendeesController extends AppController {
                                 case ('ft_nolodging'):
                                     $cost = $rates[1]['cost'] + $rates[8]['cost']*$rates[1]['late_fee'];
                                     $onsite = array_merge($onsite,array('need_badge' => '1'));
-                                    $table = '4';
+                                    $table = 'Badge';
                                     break;
                                 /**case ('sat_only'):
                                     $cost = $rates[7];
@@ -788,7 +787,7 @@ class AttendeesController extends AppController {
                                         case ('4'):
                                             $cost = '75';
                                             $onsite = array_merge($onsite,array('need_badge' => '1'));
-                                            $table = '4';
+                                            $table = 'Badge';
                                             break;
                                         case ('3'):
                                             $cost = '65';
@@ -796,7 +795,7 @@ class AttendeesController extends AppController {
                                             break;
                                         case ('2'):
                                         case ('1'):
-                                            $this->Attendee->set(array('PT' => '1'));
+                                            //$this->Attendee->set(array('PT' => '1'));
                                             $cost = $rates[9]['cost']*count(array_filter($attendee['Attendee']['pt_meals'])) + $rates[10]['cost']*count(array_filter($attendee['Attendee']['pt_misc']));
                                             $part_time = 1;
                                             break;
@@ -809,25 +808,33 @@ class AttendeesController extends AppController {
                                     'conference_id' => $attendee['Attendee']['conference_id'],
                                     'receive_date' => date('Y-m-d',strtotime('now')),
                                     'locality_id' => $attendee['Attendee']['locality_id'],
-                                    'description' => 'Late registration',
+                                    'finance_type_id' => 3,
                                     'count' => '1',
                                     'rate' => $cost,
                                     'charge' => null,
                                     'payment' => null,
                                     'balance' => null,
-                                    'comment' => $attendee['Attendee']['first_name'].' '.$attendee['Attendee']['last_name']
+                                    'comment' => null,
                                 ));
                                 $this->Attendee->Locality->Finance->save($finance);
+                                $this->Attendee->AttendeeFinanceAdd->create($attendeefinance = array(
+                                    'add_attendee_id' => $attendee['Attendee']['id'],
+                                    'finance_id' => $this->Attendee->Locality->Finance->id,
+                                ));
+                                $this->Attendee->AttendeeFinanceAdd->save($attendeefinance);
                             } else $table = '0';
                             if($part_time === 1) {
-                                $part_time = array('attendee_id' => $attendee['Attendee']['id']);
+                                $part_time = array(
+                                    'conference_id' => $attendee['Attendee']['conference_id'],
+                                    'attendee_id' => $attendee['Attendee']['id'],
+                                );
                                 foreach($attendee['Attendee']['pt_meetings'] as $pt_meeting):
                                     $part_time = array_merge($part_time,array($part_time_mtgs[$pt_meeting] => 1));
                                 endforeach;
                                 foreach($attendee['Attendee']['pt_meals'] as $pt_meal):
                                     $part_time = array_merge($part_time,array($part_time_meals[$pt_meal] => 1));
                                 endforeach;
-                                if(empty($attendee['PartTimeRegistration'])) {
+                                if($attendee['PartTimeRegistration']['id'] == null) {
                                     $this->Attendee->PartTimeRegistration->create($part_time);
                                     $this->Attendee->PartTimeRegistration->save($part_time);
                                 } else {
@@ -838,11 +845,10 @@ class AttendeesController extends AppController {
                             $this->Attendee->set(array('rate' => $cost));
                             $onsite_id = $this->Attendee->OnsiteRegistration->find('list',array('conditions' => array('OnsiteRegistration.attendee_id' => $attendee['Attendee']['id'])));
                             $this->Attendee->OnsiteRegistration->id = $onsite_id;
-                            $this->Attendee->OnsiteRegistration->set(array('registration' => 1));
-                            $this->Attendee->OnsiteRegistration->save($onsite);
+                            $this->Attendee->OnsiteRegistration->save($onsite,array('validate' => false));
                             $this->Attendee->CheckIn->create($CheckIn = array(
-                            'attendee_id' => $attendee['Attendee']['id'],
-                            'timestamp' => ''
+                                'attendee_id' => $attendee['Attendee']['id'],
+                                'timestamp' => ''
                             ));
                             $this->Attendee->CheckIn->save($CheckIn);
                             $confirm = array('cost' => $cost-$attendee['Attendee']['paid_at_conf'],'table' => $table);
