@@ -61,6 +61,7 @@ class CancelsController extends AppController {
             if (!empty($attendee_id)) {
                 $status = $this->Cancel->Attendee->get_status($attendee_id);
                 $attendee = $this->Cancel->Attendee->find('first',array('conditions' => array('Attendee.id' => $attendee_id)));
+                
                 if ($messages[$status] === true) {
                     $referer = $this->referer();
                 } else {
@@ -85,7 +86,9 @@ class CancelsController extends AppController {
                     $this->Cancel->create();
                     $this->request->data['Cancel']['attendee_id'] = $attendee['Attendee']['id'];
                     if ($this->Cancel->save($this->request->data)) {
-                        $this->Cancel->Attendee->Lodging->save(array('id' => $attendee['Lodging']['id'],'attendee_count' => $attendee['Lodging']['attendee_count'] - 1),false);
+                        if ($attendee['Attendee']['lodging_id'] !== null) {
+                            $this->Cancel->Attendee->Lodging->save(array('id' => $attendee['Lodging']['id'],'attendee_count' => $attendee['Lodging']['attendee_count'] - 1),false);
+                        }                        
                         $this->Session->setFlash(__('The attendee '.$attendee['Attendee']['name'].' has been canceled'),'success');
                         $this->redirect($this->request->data['Referer']['url']);
                     } else {
@@ -145,7 +148,9 @@ class CancelsController extends AppController {
                 $lodging = $this->Cancel->Attendee->Lodging->find('first',array('conditions' => array('Lodging.id' => $attendee['Attendee']['lodging_id']),'recursive' => -1));
 		$this->request->onlyAllow('post', 'delete');
 		if ($this->Cancel->delete()) {
-                        $this->Cancel->Attendee->Lodging->save(array('id' => $lodging['Lodging']['id'],'attendee_count' => $lodging['Lodging']['attendee_count'] + 1),false);
+                        if ($attendee['Attendee']['lodging_id'] !== null) {
+                            $this->Cancel->Attendee->Lodging->save(array('id' => $lodging['Lodging']['id'],'attendee_count' => $lodging['Lodging']['attendee_count'] + 1),false);
+                        }
 			$this->Session->setFlash(__('Cancel deleted'),'success');
 			$this->redirect($this->referer());
 		}
