@@ -3,7 +3,8 @@
 	<fieldset>
 		<legend><?php echo __('Edit Finance'); ?></legend>
 	<?php
-		echo $this->Form->input('id');
+		echo $this->Form->hidden('referer',array('default' => $referer));
+                echo $this->Form->input('id');
 		echo $this->Form->input('conference_id');
 		echo $this->Form->input('receive_date');
 		echo $this->Form->input('locality_id');

@@ -190,7 +190,7 @@ class FinancesController extends AppController {
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->Finance->save($this->request->data)) {
 				$this->Session->setFlash(__('The finance has been saved'),'success');
-				$this->redirect(array('action' => 'index'));
+				$this->redirect($this->request->data['Finance']['referer']);
 			} else {
 				$this->Session->setFlash(__('The finance could not be saved. Please, try again.'),'failure');
 			}
@@ -202,12 +202,13 @@ class FinancesController extends AppController {
                         }
                         unset($this->request->data['Finance']['balance']);
 		}
+                $referer = $this->referer();
                 $conferences = $this->Finance->Conference->find('list',array('conditions' => array('Conference.id' => $this->Finance->Conference->current_conference())));
                 $localities = $this->Finance->Locality->find('list');
 		$financeTypes = $this->Finance->FinanceType->find('list');
 		//$creators = $this->Finance->Creator->find('list');
 		//$modifiers = $this->Finance->Modifier->find('list');
-		$this->set(compact('conferences', 'localities', 'financeTypes'));
+		$this->set(compact('conferences', 'localities', 'financeTypes','referer'));
 	}
 
 /**
