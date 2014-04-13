@@ -65,18 +65,19 @@ class PartTimeRegistrationsController extends AppController {
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->PartTimeRegistration->save($this->request->data)) {
-				$this->Session->setFlash(__('The part time registration has been saved'));
-				$this->redirect(array('action' => 'index'));
+				$this->Session->setFlash(__('The part time registration has been saved'),'success');
+				$this->redirect($this->request->data['PartTimeRegistration']['referer']);
 			} else {
-				$this->Session->setFlash(__('The part time registration could not be saved. Please, try again.'));
+				$this->Session->setFlash(__('The part time registration could not be saved. Please, try again.'),'failure');
 			}
 		} else {
 			$options = array('conditions' => array('PartTimeRegistration.' . $this->PartTimeRegistration->primaryKey => $id));
 			$this->request->data = $this->PartTimeRegistration->find('first', $options);
 		}
-		$conferences = $this->PartTimeRegistration->Conference->find('list');
+		$referer = $this->referer();
+                $conferences = $this->PartTimeRegistration->Conference->find('list');
 		$attendees = $this->PartTimeRegistration->Attendee->find('list');
-		$this->set(compact('conferences', 'attendees'));
+		$this->set(compact('conferences', 'attendees','referer'));
 	}
 
 /**

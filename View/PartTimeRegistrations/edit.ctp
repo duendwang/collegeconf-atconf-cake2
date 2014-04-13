@@ -3,7 +3,8 @@
 	<fieldset>
 		<legend><?php echo __('Edit Part Time Registration'); ?></legend>
 	<?php
-		echo $this->Form->input('id');
+                echo $this->Form->hidden('referer',array('default' => $referer));
+                echo $this->Form->input('id');
 		echo $this->Form->input('conference_id');
 		echo $this->Form->input('attendee_id');
 		echo $this->Form->input('fri_din');
@@ -23,7 +24,7 @@
 	</fieldset>
 <?php echo $this->Form->end(__('Submit')); ?>
 </div>
-<div class="actions">
+<?php /**<div class="actions">
 	<h3><?php echo __('Actions'); ?></h3>
 	<ul>
 
@@ -35,3 +36,4 @@
 		<li><?php echo $this->Html->link(__('New Attendee'), array('controller' => 'attendees', 'action' => 'add')); ?> </li>
 	</ul>
 </div>
+**/?>
