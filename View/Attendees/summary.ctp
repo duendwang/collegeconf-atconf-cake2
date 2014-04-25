@@ -2,24 +2,24 @@
 	<h2><?php echo __('Attendee Summary by Locality'); ?></h2>
         <table cellpadding="0" cellspacing="0" class="sortable">
 	<tr>
-			<th><?php echo $this->Paginator->sort('locality_id'); ?></th>
-                        <th><?php echo $this->Paginator->sort('total'); ?></th>
-                        <th><?php echo $this->Paginator->sort('checked_in'); ?></th>
-                        <th><?php echo $this->Paginator->sort('canceled'); ?></th>
-                        <th><?php echo $this->Paginator->sort('excused/Replaced'); ?></th>
-                        <th><?php echo $this->Paginator->sort('final_count'); ?></th>
-                        <th><?php echo $this->Paginator->sort('total_charge'); ?></th>
+			<th><?php echo __('Locality'); ?></th>
+                        <th><?php echo __('Total Count'); ?></th>
+                        <th><?php echo __('Checked In'); ?></th>
+                        <th><?php echo __('Canceled'); ?></th>
+                        <th><?php echo __('Excused/Replaced'); ?></th>
+                        <th><?php echo __('Final Count'); ?></th>
+                        <th><?php echo __('Final Charge'); ?></th>
 	</tr>
 	<?php
-	foreach ($summaries as $summary): ?>
+	foreach ($summaries as $locality_id => $summary): ?>
 	<tr>
-            <td><?php echo $this->Html->link($summary['Locality']['name'],array('action' => 'report',$summary['Locality']['id'])); ?>&nbsp;</td>
-            <td><?php echo h($summary[0]['total']); ?>&nbsp;</td>
-            <td><?php echo h($summary[0]['checked_in']); ?>&nbsp;</td>
-            <td><?php echo h($summary[0]['canceled']); ?>&nbsp;</td>
-            <td><?php echo h($summary[0]['excused']); ?>&nbsp;</td>
-            <td><?php echo h($summary[0]['remaining_registered']); ?>&nbsp;</td>
-            <td><?php echo h($summary[0]['total_charge']); ?>&nbsp;</td>
+            <td><?php echo $this->Html->link($summary['name'],array('action' => 'report',$locality_id)); ?>&nbsp;</td>
+            <td><?php echo h($summary['total']); ?>&nbsp;</td>
+            <td><?php echo h($summary['checked_in']); ?>&nbsp;</td>
+            <td><?php echo h($summary['canceled']); ?>&nbsp;</td>
+            <td><?php echo h($summary['excused']); ?>&nbsp;</td>
+            <td><?php echo h($summary['final_count']); ?>&nbsp;</td>
+            <td><?php echo h($summary['total_charge']); ?>&nbsp;</td>
         </tr>
         <?php endforeach;?>
         </table>

@@ -69,6 +69,7 @@ class FinancesController extends AppController {
                         'conditions' => array('Finance.locality_id =' => $locality),
                         'contain' => $this->Finance->contain,
                         'order' => array('Finance.receive_date' => 'asc'),
+                        'limit' => 100,
                     );
                     $locality = $this->Finance->Locality->find('first',array('conditions' => array('Locality.id' => $locality),'recursive' => 0));
                     $this->set('totals',$this->Finance->find('all',array('conditions' => array('Finance.locality_id' => $locality['Locality']['id']),'fields' => array('Finance.conference_id','Locality.name','sum(count) as total_count','sum(charge) as total_charge','sum(payment) as total_payment','sum(balance) as total_balance'),'recursive' => 2)));
@@ -120,7 +121,8 @@ class FinancesController extends AppController {
                     'SUM(Finance.payment) as "total payment"',
                     'SUM(Finance.balance) as "balance"'),
                 'order' => array('Locality.name' => 'asc'),
-                'group' => array('Finance.locality_id')
+                'group' => array('Finance.locality_id'),
+                'limit' => 100,
                 );
             /**$report_entries = $this->Finance->query("SELECT city,
                 SUM(count) AS count,

@@ -71,13 +71,13 @@ class AttendeesController extends AppController {
                     )
                 ));
                 
-                $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference()),'recursive' => 0));
+                $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => 6/**$this->Attendee->Conference->current_conference()**/),'recursive' => 0));
                 
                 if(isset($locality)) {
                     $this->paginate = array(
-                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('AND' => array('Cancel.created >' => date('Y-m-d h:i:s',strtotime($conference['Conference']['start_date'])),'Cancel.replaced' => null),'Attendee.cancel_count' => 0)),
+                        'conditions' => array('Attendee.locality_id =' => $locality, 'OR' => array('Cancel.created >' => date('Y-m-d h:i:s',strtotime($conference['Conference']['start_date'])),'Attendee.cancel_count' => 0)),
                         'contain' => $contain,
-                        'limit' => 100,
+                        'limit' => 200,
                     );
                     $locality = $this->Attendee->Locality->find('first',array('conditions' => array('Locality.id' => $locality),'recursive' => 0));
                 } else {
@@ -118,10 +118,69 @@ class AttendeesController extends AppController {
                         'fields' => array(
                             'Locality.name'
                         )
-                    )
+                    ),
                 );
                 
-                $summaries = $this->Attendee->find('all',array('contain' => $contain,'fields' => array('Attendee.locality_id','COUNT(Attendee.id) as count','SUM(rate) as total_charge'),'order' => array('Attendee.locality_id' => 'asc'),'group' => 'Attendee.locality_id','order' => 'Locality.name'));
+                $totals = $this->Attendee->find('all',array(
+                    'contain' => $contain,
+                    'fields' => array(
+                        //'Attendee.locality_id',
+                        'COUNT(Attendee.id) as total',
+                        'SUM(check_in_count) as checked_in',
+                        'SUM(cancel_count) as canceled',
+                    ),
+                    'group' => 'Attendee.locality_id',
+                    'order' => 'Locality.name',
+                ));
+                
+                $excused_ids = $this->Attendee->AttendeeFinanceCancel->find('list',array(
+                    'conditions' => array(
+                        'AttendeeFinanceCancel.cancel_attendee_id NOT' => null,
+                    ),
+                    'fields' => array(
+                        'AttendeeFinanceCancel.cancel_attendee_id',
+                    ),
+                ));
+                
+                $excused_counts = $this->Attendee->find('all',array(
+                    'conditions' => array(
+                        'Attendee.id' => $excused_ids,
+                    ),
+                    'contain' => $contain,
+                    'fields' => array(
+                        'COUNT(Attendee.id) as count',
+                    ),
+                    'group' => 'Attendee.locality_id',
+                    'order' => 'Locality.name',
+                ));
+                
+                $final_counts = $this->Attendee->find('all',array(
+                    'conditions' => array(
+                        'Attendee.id NOT' => $excused_ids,
+                    ),
+                    'contain' => $contain,
+                    'fields' => array(
+                        'COUNT(Attendee.id) as count',
+                        'SUM(Attendee.rate) as charge'
+                    ),
+                    'group' => 'Attendee.locality_id',
+                    'order' => 'Locality.name',
+                ));
+                
+                foreach($totals as $total):
+                    $summaries[$total['Locality']['id']] = array_merge(array('name' => $total['Locality']['name']),$total[0]);
+                    $summaries[$total['Locality']['id']]['excused'] = '0';
+                endforeach;
+                
+                foreach($excused_counts as $excused):
+                    $summaries[$excused['Locality']['id']]['excused'] = $excused[0]['count'];
+                endforeach;
+                
+                foreach($final_counts as $final):
+                    $summaries[$final['Locality']['id']]['final_count'] = $final[0]['count'];
+                    $summaries[$final['Locality']['id']]['total_charge'] = $final[0]['charge'];
+                endforeach;
+                
                 $this->set(compact('summaries'));
 	}
 
