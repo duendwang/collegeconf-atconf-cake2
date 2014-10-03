@@ -27,17 +27,21 @@
 	<?php
 		echo $this->Html->meta('icon');
 
-		echo $this->Html->css('collegeconf');
-                echo $this->Html->css('jquery.autocomplete');
+		echo $this->Html->css('collegeconf'); //default css
+                echo $this->Html->css('jquery-ui');
+                echo $this->Html->css('jquery-ui.min');
+                echo $this->Html->css('jquery-ui.structure');
+                echo $this->Html->css('jquery-ui.structure.min');
+                echo $this->Html->css('jquery-ui.theme');
+                echo $this->Html->css('jquery-ui.theme.min');
+
+                echo $this->Html->script('jquery.min'); // Include jQuery library
+                echo $this->Html->script('jquery.min');
+                echo $this->Html->script('sorttable'); // Include sorttable library
                 
                 echo $this->fetch('meta');
 		echo $this->fetch('css');
 		echo $this->fetch('script');
-
-                echo $this->Html->script('jquery.min'); // Include jQuery library
-                echo $this->Html->script('jquery.autocomplete.min.js');
-                
-                echo $this->Html->script('sorttable'); // Include sorttable library
                 
 		echo $scripts_for_layout;
 	?>
