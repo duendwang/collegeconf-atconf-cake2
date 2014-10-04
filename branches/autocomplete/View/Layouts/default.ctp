@@ -29,14 +29,16 @@
 
 		echo $this->Html->css('collegeconf'); //default css
                 echo $this->Html->css('jquery-ui');
-                echo $this->Html->css('jquery-ui.min');
+                //echo $this->Html->css('jquery-ui.min');
                 echo $this->Html->css('jquery-ui.structure');
-                echo $this->Html->css('jquery-ui.structure.min');
+                //echo $this->Html->css('jquery-ui.structure.min');
                 echo $this->Html->css('jquery-ui.theme');
-                echo $this->Html->css('jquery-ui.theme.min');
+                //echo $this->Html->css('jquery-ui.theme.min');
 
-                echo $this->Html->script('jquery.min'); // Include jQuery library
-                echo $this->Html->script('jquery.min');
+                echo $this->Html->script('jquery'); //Include jQuery development library
+                echo $this->Html->script('jquery.min'); //Include jQuery production library
+                echo $this->Html->script('jquery-ui');
+                echo $this->Html->script('jquery-ui.min');
                 echo $this->Html->script('sorttable'); // Include sorttable library
                 
                 echo $this->fetch('meta');
