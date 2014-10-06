@@ -182,24 +182,28 @@ class CampusesController extends AppController {
 		$this->redirect(array('action' => 'index'));
 	}
         
-        public function find() {
-  $this->Company->recursive = -1;
-  if ($this->request->is('ajax')) {
-    $this->autoRender = false;
-    $results = $this->Company->find('all', array(
-      'fields' => array('Company.name'),
-      //remove the leading '%' if you want to restrict the matches more
-      'conditions' => array('Company.name LIKE ' => '%' . $this->request->query['q'] . '%')
-    ));
-    foreach($results as $result) {
-      echo $result['Company']['name'] . "\n";
-    }
- 
-  } else {
-  	//if the form wasn't submitted with JavaScript
-    //set a session variable with the search term in and redirect to index page
-    $this->Session->write('companyName',$this->request->data['Company']['name']);
-    $this->redirect(array('action' => 'index'));
-  }
-}
+        
+/**
+ * autocomplete method
+ */
+        public function autocomplete() {
+            $this->Campus->recursive = -1;
+            if ($this->request->is('ajax')) {
+                $this->autoRender = false;
+                $campuses = $this->Campus->find('all', array(
+                    'fields' => array('Campus.name'),
+                    //remove the leading '%' if you want to restrict the matches more
+                    'conditions' => array('Company.name LIKE ' => '%' . $this->request->query['q'] . '%')
+                ));
+                foreach($results as $result):
+                    echo $result['Company']['name'] . "\n";
+                endforeach;
+            } else {
+                //if the form wasn't submitted with JavaScript
+                //set a session variable with the search term in and redirect to index page
+                //$this->Session->write('companyName',$this->request->data['Company']['name']);
+                $this->Session->setflash('You have reached this page in error. Please use the links from the home page or from the registration team to navigate to where you need to go. If the problem persists, please contact the registration team for support.','failure');
+                $this->redirect(array('controller' => 'pages','action' => 'display','home'));
+            }
+        }
 }
