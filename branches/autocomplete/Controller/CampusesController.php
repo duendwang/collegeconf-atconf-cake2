@@ -190,14 +190,29 @@ class CampusesController extends AppController {
             $this->Campus->recursive = -1;
             if ($this->request->is('ajax')) {
                 $this->autoRender = false;
+                $this->layout = 'ajax';
+                $query = $_GET['term'];
                 $campuses = $this->Campus->find('all', array(
-                    'fields' => array('Campus.name'),
+                    'fields' => array('Campus.name','Campus.code'),
                     //remove the leading '%' if you want to restrict the matches more
-                    'conditions' => array('Company.name LIKE ' => '%' . $this->request->query['q'] . '%')
-                ));
-                foreach($results as $result):
-                    echo $result['Company']['name'] . "\n";
+                    'conditions' => array(
+                        'OR',array(
+                            'Campus.name LIKE ' => '%' . $query . '%',
+                            'Campus.code LIKE ' => '%' . $query . '%',
+                        ),
+                        'Campus.name NOT LIKE' => 'Other%',
+                )));
+                $i = 0;
+                foreach($campuses as $campus):
+                    $response[$i]['id'] = $campus['Campus']['id'];
+                    if (notempty($campus['Campus']['code'])) {
+                        $response['display'] = $campus['Campus']['name'].' ('.$campus['Campus']['code'].')';
+                    } else {
+                        $response['display'] = $campus['Campus']['name'];
+                    }
+                    $i++;
                 endforeach;
+                echo json_encode($response);
             } else {
                 //if the form wasn't submitted with JavaScript
                 //set a session variable with the search term in and redirect to index page
