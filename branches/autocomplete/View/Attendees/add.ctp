@@ -114,3 +114,10 @@
     </fieldset>
 <?php echo $this->Form->end('Submit'); ?>
 </div>
+<script>
+$(document).ready(function(){  
+    $("AttendeeCampusId").autocomplete("/Campus/autocomplete.json", {
+    minChars: 2
+    });
+  });
+</script>
