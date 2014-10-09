@@ -1215,28 +1215,46 @@ class AttendeesController extends AppController {
 		$this->redirect(array('action' => 'index'));
 	}
         
-        public function find() {
-  $this->Attendee->Campus->recursive = -1;
-  if ($this->request->is('ajax')) {
-    $this->autoRender = false;
-    $results = $this->Attendee->Campus->find('all', array(
-      'fields' => array('Campus.name'),
-      //remove the leading '%' if you want to restrict the matches more
-      'conditions' => array('OR' => array(
-          'Campus.name LIKE ' => '%' . $this->request->query['q'] . '%',
-          'Campus.code LIKE ' => '%' . $this->request->query['q'] . '%',
-      ))
-          
-    ));
-    foreach($results as $result) {
-      echo $result['Campus']['name'] . "\n";
-    }
- 
-  } else {
-  	//if the form wasn't submitted with JavaScript
-    //set a session variable with the search term in and redirect to index page
-    $this->Session->write('campusName',$this->request->data['Campus']['name']);
-    $this->redirect(array('action' => 'index'));
-  }
-}
+        /**
+ * autocomplete method
+ */
+        public function autocomplete() {
+            $this->Attendee->Campus->recursive = -1;
+            if ($this->request->is('ajax')) {
+                $this->redirect(array('controller' => 'attendees', 'action' => 'index'));
+                $this->autoRender = false;
+                $this->layout = 'ajax';
+                debug($_GET['term']);
+                debug($this->request);
+                //$query = $_GET['term'];
+                $query = $this->request->query('term');
+                $campuses = $this->Attendee->Campus->find('all', array(
+                    'fields' => array('Campus.name','Campus.code'),
+                    //remove the leading '%' if you want to restrict the matches more
+                    'conditions' => array(
+                        'OR',array(
+                            'Campus.name LIKE ' => '%' . $query . '%',
+                            'Campus.code LIKE ' => '%' . $query . '%',
+                        ),
+                        'Campus.name NOT LIKE' => 'Other%',
+                )));
+                $i = 0;
+                foreach($campuses as $campus):
+                    $response[$i]['id'] = $campus['Campus']['id'];
+                    if (notempty($campus['Campus']['code'])) {
+                        $response['display'] = $campus['Campus']['name'].' ('.$campus['Campus']['code'].')';
+                    } else {
+                        $response['display'] = $campus['Campus']['name'];
+                    }
+                    $i++;
+                endforeach;
+                echo json_encode($response);
+            } else {
+                //if the form wasn't submitted with JavaScript
+                //set a session variable with the search term in and redirect to index page
+                //$this->Session->write('companyName',$this->request->data['Company']['name']);
+                $this->Session->setflash('You have reached this page in error. Please use the links from the home page or from the registration team to navigate to where you need to go. If the problem persists, please contact the registration team for support.','failure');
+                $this->redirect(array('controller' => 'pages','action' => 'display','home'));
+            }
+        }
 }
