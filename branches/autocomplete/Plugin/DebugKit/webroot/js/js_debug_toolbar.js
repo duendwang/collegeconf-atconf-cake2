@@ -57,7 +57,7 @@ var DEBUGKIT = function () {
 	}
 
 	// Look for existing jQuery that matches the requirements.
-	if (window.jQuery && versionWithin(jQuery.fn.jquery, "1.8", "2.0")) {
+	if (window.jQuery && versionWithin(jQuery.fn.jquery, "1.8", "2.1")) {
 		DEBUGKIT.$ = window.jQuery;
 	} else {
 		// sync load the file. Using document.write() does not block
@@ -65,7 +65,8 @@ var DEBUGKIT = function () {
 		var req = new XMLHttpRequest();
 		req.onload = function () {
 			eval(this.responseText);
-			DEBUGKIT.$ = jQuery.noConflict(); // do not unset window.jQuery
+			// Restore both $ and jQuery to the original values.
+			DEBUGKIT.$ = jQuery.noConflict(true);
 		};
 		req.open('get', window.DEBUGKIT_JQUERY_URL, false);
 		req.send();
@@ -96,7 +97,7 @@ DEBUGKIT.sqlLog = function () {
 
 	return {
 		init : function () {
-			var sqlPanel = $('#sqllog-tab');
+			var sqlPanel = $('#sql_log-tab');
 			var buttons = sqlPanel.find('input');
 
 			// Button handling code for explain links.
