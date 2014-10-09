@@ -189,9 +189,13 @@ class CampusesController extends AppController {
         public function autocomplete() {
             $this->Campus->recursive = -1;
             if ($this->request->is('ajax')) {
+                $this->redirect(array('controller' => 'pages', 'action' => 'display','home'));
                 $this->autoRender = false;
                 $this->layout = 'ajax';
-                $query = $_GET['term'];
+                debug($_GET['term']);
+                debug($this->request->query['term']);
+                //$query = $_GET['term'];
+                $query = $this->request->query('term');
                 $campuses = $this->Campus->find('all', array(
                     'fields' => array('Campus.name','Campus.code'),
                     //remove the leading '%' if you want to restrict the matches more

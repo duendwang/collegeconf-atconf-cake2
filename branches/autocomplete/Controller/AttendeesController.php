@@ -7,8 +7,6 @@ App::uses('AppController', 'Controller');
  */
 class AttendeesController extends AppController {
 
-        public $helpers = array('Js' => array('Jquery'));
-        
         public $components = array('Search.Prg');
 
         public $presetVars = array(
@@ -628,13 +626,13 @@ class AttendeesController extends AppController {
                 $this->Attendee->validate = '';
                 $conferences = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference())));
                 $localities = $this->Attendee->Locality->find('list');
-		$campuses = $this->Attendee->Campus->find('list');
+		//$campuses = $this->Attendee->Campus->find('list');
 		$statuses = $this->Attendee->Status->find('list', array(/**'conditions' => array('Status.id >' => 1),**/ 'order' => 'Status.id'));
 		$lodgings = $this->Attendee->Lodging->find('list');
 		//$creators = $this->Attendee->Creator->find('list');
 		//$modifiers = $this->Attendee->Modifier->find('list');
                 
-		$this->set(compact('conferences', 'localities', 'campuses', 'statuses', 'lodgings'));
+		$this->set(compact('conferences', 'localities', /**'campuses', **/'statuses', 'lodgings'));
 	}
 
 /**

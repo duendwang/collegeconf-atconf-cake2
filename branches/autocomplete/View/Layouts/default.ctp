@@ -36,9 +36,9 @@
                 //echo $this->Html->css('jquery-ui.theme.min');
 
                 echo $this->Html->script('jquery'); //Include jQuery development library
-                echo $this->Html->script('jquery.min'); //Include jQuery production library
+                //echo $this->Html->script('jquery.min'); //Include jQuery production library
                 echo $this->Html->script('jquery-ui');
-                echo $this->Html->script('jquery-ui.min');
+                //echo $this->Html->script('jquery-ui.min');
                 echo $this->Html->script('sorttable'); // Include sorttable library
                 
                 echo $this->fetch('meta');
