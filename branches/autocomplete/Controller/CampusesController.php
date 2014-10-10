@@ -189,7 +189,7 @@ class CampusesController extends AppController {
         public function autocomplete($all = false) {
             $this->Campus->recursive = -1;
             $this->autoRender = false;
-            //if ($this->request->is('ajax')) {
+            if ($this->request->is('ajax')) {
                 $this->layout = 'ajax';
                 $query = $this->request->query('term');
                 
@@ -221,14 +221,12 @@ class CampusesController extends AppController {
                     $i++;
                 endforeach;
                 echo json_encode($response);
-                //$this->set(compact('campuses'));
-                //$this->set('_serialize','campuses');
-            //} else {
+            } else {
                 //if the form wasn't submitted with JavaScript
                 //set a session variable with the search term in and redirect to index page
                 //$this->Session->write('companyName',$this->request->data['Company']['name']);
-            //    $this->Session->setflash('You have reached this page in error. Please use the links from the home page or from the registration team to navigate to where you need to go. If the problem persists, please contact the registration team for support.','failure');
-            //    $this->redirect(array('controller' => 'pages','action' => 'display','home'));
-            //}
+                $this->Session->setflash('You have reached this page in error. Please use the links from the home page or from the registration team to navigate to where you need to go. If the problem persists, please contact the registration team for support.','failure');
+                $this->redirect(array('controller' => 'pages','action' => 'display','home'));
+            }
         }
 }

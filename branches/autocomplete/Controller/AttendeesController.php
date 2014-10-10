@@ -1215,7 +1215,7 @@ class AttendeesController extends AppController {
 		$this->redirect(array('action' => 'index'));
 	}
         
-        /**
+/**
  * autocomplete method
  */
         public function autocomplete() {
