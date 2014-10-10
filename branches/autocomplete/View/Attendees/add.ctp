@@ -118,7 +118,7 @@
 <script>
 $(document).ready(function(){  
     $("#AttendeeCampusId").autocomplete({
-        source: "../campuses/autocomplete.json",
+        source: "../campuses/autocomplete",
         minLength: 2,
         focus: function(event, ui) {
             event.preventDefault();
