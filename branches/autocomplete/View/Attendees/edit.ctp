@@ -11,6 +11,7 @@
         }
     </style>
 <?php echo $this->Form->create('Attendee'); ?>
+<?php debug($this->request->data);?>
 <h2>Edit Attendee</h2>
 <h2 style="text-align: center; color:#333"><?php echo $this->request->data['Attendee']['first_name'],' ',$this->request->data['Attendee']['last_name'];?></h2>
 <?php echo $this->Form->input('id');
@@ -33,7 +34,8 @@ echo $this->Form->input('reg_type',array('label' => false,'hidden' => true,'div'
         <tr>
             <td width=100></td>
             <td><?php echo $this->Form->input('status_id', array('label' => 'Current Status','empty' => true, 'default' => null));?></td>
-            <td colspan="2"><?php echo $this->Form->input('campus_id', array('empty' => true, 'default' => null));?></td>
+            <td colspan="2"><?php echo $this->Form->input('campus_id', array('type' => 'text'));?></td>
+            <?php //TODO populate field with label instead of value on page load?>
         </tr>
         <tr>
             <td width="100"></td>
@@ -75,28 +77,20 @@ echo $this->Form->input('reg_type',array('label' => false,'hidden' => true,'div'
 
 <?php echo $this->Form->end(__('Submit')); ?>
 </div>
-<!--<div class="actions">
-	<h3><?php /**echo __('Actions'); ?></h3>
-	<ul>
-
-		<li><?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $this->Form->value('Attendee.id')), null, __('Are you sure you want to delete # %s?', $this->Form->value('Attendee.id'))); ?></li>
-		<li><?php echo $this->Html->link(__('List Attendees'), array('action' => 'index')); ?></li>
-		<li><?php echo $this->Html->link(__('List Conferences'), array('controller' => 'conferences', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Conference'), array('controller' => 'conferences', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Localities'), array('controller' => 'localities', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Locality'), array('controller' => 'localities', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Campuses'), array('controller' => 'campuses', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Campus'), array('controller' => 'campuses', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Statuses'), array('controller' => 'statuses', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Status'), array('controller' => 'statuses', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Lodgings'), array('controller' => 'lodgings', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Lodging'), array('controller' => 'lodgings', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Check Ins'), array('controller' => 'check_ins', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Check In'), array('controller' => 'check_ins', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Onsite Registrations'), array('controller' => 'onsite_registrations', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Onsite Registration'), array('controller' => 'onsite_registrations', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Part Time Registrations'), array('controller' => 'part_time_registrations', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Part Time Registration'), array('controller' => 'part_time_registrations', 'action' => 'add')); **/?> </li>
-	</ul>
-</div>
--->
+<script>
+$(document).ready(function(){  
+    $("#AttendeeCampusId").autocomplete({
+        source: "../../campuses/autocomplete/true",
+        minLength: 2,
+        focus: function(event, ui) {
+            event.preventDefault();
+            $("#AttendeeCampusId").val(ui.item.label);
+            return false
+        },
+        select: function(event, ui) {
+            event.preventDefault();
+            $("#AttendeeCampusId").val(ui.item.label);
+        },
+    });
+});
+</script>

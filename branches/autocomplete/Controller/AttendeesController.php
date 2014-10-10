@@ -632,7 +632,7 @@ class AttendeesController extends AppController {
 		//$creators = $this->Attendee->Creator->find('list');
 		//$modifiers = $this->Attendee->Modifier->find('list');
                 
-		$this->set(compact('conferences', 'localities', /**'campuses', **/'statuses', 'lodgings'));
+		$this->set(compact('conferences', 'localities', 'statuses', 'lodgings'));
 	}
 
 /**
@@ -729,9 +729,9 @@ class AttendeesController extends AppController {
 		}
                 $conferences = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference())));
                 $localities = $this->Attendee->Locality->find('list', array('conditions' => array('Locality.id >' => '3'/**,'Locality.id NOT' => '44'**/),'fields' => 'Locality.name'));
-                $campuses = $this->Attendee->Campus->find('list');
+                //$campuses = $this->Attendee->Campus->find('list');
 		$statuses = $this->Attendee->Status->find('list', array(/**'conditions' => array('Status.id >' => 1), **/'order' => 'Status.id'));
-		$this->set(compact('conferences', 'localities', 'campuses', 'statuses'));
+		$this->set(compact('conferences', 'localities', 'statuses'));
                 
                 if($this->Session->read('Attendee.selfadd') && $this->referer() == Router::url(array('controller' => 'attendees', 'action' => 'verify'))) {
                     $this->request->data = $this->Session->read('Attendee.selfadd');
@@ -1015,10 +1015,10 @@ class AttendeesController extends AppController {
                 $this->Attendee->validate = '';
                 $conferences = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.id' => $this->Attendee->Conference->current_conference())));
 		$localities = $this->Attendee->Locality->find('list');
-		$campuses = $this->Attendee->Campus->find('list');
+		//$campuses = $this->Attendee->Campus->find('list');
 		$statuses = $this->Attendee->Status->find('list', array('conditions' => array('Status.id >' => 1), 'order' => 'Status.id'));
 		$lodgings = $this->Attendee->Lodging->find('list');
-		$this->set(compact('conferences', 'localities', 'campuses', 'statuses', 'lodgings'));
+		$this->set(compact('conferences', 'localities', 'statuses', 'lodgings'));
 	}
 
 /**
@@ -1083,9 +1083,9 @@ class AttendeesController extends AppController {
                 $three_days_ago = date('Y-m-d', strtotime('-4 days'));
                 $current_conference = $this->Attendee->Conference->find('list',array('conditions' => array('Conference.start_date < NOW()',"Conference.start_date >= '$three_days_ago'")));
                 $localities = $this->Attendee->Locality->find('list', array('conditions' => array('Locality.id >' => '3','Locality.id NOT' => '44'),'fields' => 'Locality.city'));
-                $campuses = $this->Attendee->Campus->find('list');
+                //$campuses = $this->Attendee->Campus->find('list');
 		$statuses = $this->Attendee->Status->find('list', array(/**'conditions' => array('Status.id >' => 1), **/'order' => 'Status.id'));
-		$this->set(compact('current_conference', 'localities', 'campuses', 'statuses'));
+		$this->set(compact('current_conference', 'localities', 'statuses'));
                 if($this->Session->read('Attendee.selfadd') == !null) $this->request->data = $this->Session->read('Attendee.selfadd');
                 $this->Session->delete('Attendee.selfadd');
                 
