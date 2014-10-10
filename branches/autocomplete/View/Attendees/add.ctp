@@ -34,7 +34,8 @@
             </tr>
             <tr>
                 <td></td>
-                <td colspan="2"><?php echo $this->Form->input('campus_id', array('type' => 'text'));?></td>
+                <td colspan="2"><?php echo $this->Form->input('campus_name');
+                echo $this->Form->hidden('campus_id', array('type' => 'text'));?></td>
             </tr>
             <tr>
                 <td></td>
@@ -116,17 +117,19 @@
 </div>
 <script>
 $(document).ready(function(){  
-    $("#AttendeeCampusId").autocomplete({
+    $("#AttendeeCampusName").autocomplete({
         source: "../campuses/autocomplete/true",
         minLength: 2,
         focus: function(event, ui) {
+            $("#AttendeeCampusId").val(ui.item.value);
             event.preventDefault();
-            $("#AttendeeCampusId").val(ui.item.label);
+            $("#AttendeeCampusName").val(ui.item.label);
             return false
         },
         select: function(event, ui) {
+            $("#AttendeeCampusId").val(ui.item.value);
             event.preventDefault();
-            $("#AttendeeCampusId").val(ui.item.label);
+            $("#AttendeeCampusName").val(ui.item.label);
         }
     });
 });

@@ -11,7 +11,6 @@
         }
     </style>
 <?php echo $this->Form->create('Attendee'); ?>
-<?php debug($this->request->data);?>
 <h2>Edit Attendee</h2>
 <h2 style="text-align: center; color:#333"><?php echo $this->request->data['Attendee']['first_name'],' ',$this->request->data['Attendee']['last_name'];?></h2>
 <?php echo $this->Form->input('id');
@@ -34,8 +33,8 @@ echo $this->Form->input('reg_type',array('label' => false,'hidden' => true,'div'
         <tr>
             <td width=100></td>
             <td><?php echo $this->Form->input('status_id', array('label' => 'Current Status','empty' => true, 'default' => null));?></td>
-            <td colspan="2"><?php echo $this->Form->input('campus_id', array('type' => 'text'));?></td>
-            <?php //TODO populate field with label instead of value on page load?>
+            <td colspan="2"><?php echo $this->Form->input('Campus.name', array('label' => 'Campus'));
+            echo $this->Form->hidden('campus_id', array('type' => 'text'));?></td>
         </tr>
         <tr>
             <td width="100"></td>
@@ -79,17 +78,19 @@ echo $this->Form->input('reg_type',array('label' => false,'hidden' => true,'div'
 </div>
 <script>
 $(document).ready(function(){  
-    $("#AttendeeCampusId").autocomplete({
+    $("#CampusName").autocomplete({
         source: "../../campuses/autocomplete/true",
         minLength: 2,
         focus: function(event, ui) {
+            $("#AttendeeCampusId").val(ui.item.value);
             event.preventDefault();
-            $("#AttendeeCampusId").val(ui.item.label);
+            $("#CampusName").val(ui.item.label);
             return false
         },
         select: function(event, ui) {
+            $("#AttendeeCampusId").val(ui.item.value);
             event.preventDefault();
-            $("#AttendeeCampusId").val(ui.item.label);
+            $("#CampusName").val(ui.item.label);
         },
     });
 });
