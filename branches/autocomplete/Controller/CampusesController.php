@@ -186,38 +186,35 @@ class CampusesController extends AppController {
 /**
  * autocomplete method
  */
-        public function autocomplete() {
+        public function autocomplete($all = false) {
             $this->Campus->recursive = -1;
+            $this->autoRender = false;
             if ($this->request->is('ajax')) {
-                $this->redirect(array('controller' => 'campuses', 'action' => 'index'));
-                $this->autoRender = false;
                 $this->layout = 'ajax';
-                debug($_GET['term']);
-                debug($this->request->query['term']);
-                exit;
-                //$query = $_GET['term'];
                 $query = $this->request->query('term');
                 $campuses = $this->Campus->find('all', array(
-                    'fields' => array('Campus.name','Campus.code'),
+                    'fields' => array('Campus.id','Campus.name','Campus.code'),
                     //remove the leading '%' if you want to restrict the matches more
                     'conditions' => array(
-                        'OR',array(
-                            'Campus.name LIKE ' => '%' . $query . '%',
-                            'Campus.code LIKE ' => '%' . $query . '%',
+                        'OR' => array(
+                            'Campus.name LIKE' => '%' . $query . '%',
+                            'Campus.code LIKE' => '%' . $query . '%',
                         ),
                         'Campus.name NOT LIKE' => 'Other%',
                 )));
                 $i = 0;
                 foreach($campuses as $campus):
-                    $response[$i]['id'] = $campus['Campus']['id'];
-                    if (notempty($campus['Campus']['code'])) {
-                        $response['display'] = $campus['Campus']['name'].' ('.$campus['Campus']['code'].')';
+                    $response[$i]['value'] = $campus['Campus']['id'];
+                    if (!empty($campus['Campus']['code'])) {
+                        $response[$i]['label'] = $campus['Campus']['name'].' ('.$campus['Campus']['code'].')';
                     } else {
-                        $response['display'] = $campus['Campus']['name'];
+                        $response[$i]['label'] = $campus['Campus']['name'];
                     }
                     $i++;
                 endforeach;
                 echo json_encode($response);
+                //$this->set(compact('campuses'));
+                //$this->set('_serialize','campuses');
             } else {
                 //if the form wasn't submitted with JavaScript
                 //set a session variable with the search term in and redirect to index page

@@ -118,8 +118,17 @@
 <script>
 $(document).ready(function(){  
     $("#AttendeeCampusId").autocomplete({
-        source: "campuses/autocomplete.json",
-        minLength: 2
+        source: "../campuses/autocomplete.json",
+        minLength: 2,
+        focus: function(event, ui) {
+            event.preventDefault();
+            $("#AttendeeCampusId").val(ui.item.label);
+            return false
+        },
+        select: function(event, ui) {
+            event.preventDefault();
+            $("#AttendeeCampusId").val(ui.item.label);
+        }
     });
-  });
+});
 </script>
