@@ -34,8 +34,7 @@
             </tr>
             <tr>
                 <td></td>
-                <td colspan="2"><?php echo $this->Form->input('campus_id', array('type' => 'text', 'autocomplete' => 'on'));
-                //echo $this->Form->input('campus_id', array('empty' => true, 'default' => null));?></td>
+                <td colspan="2"><?php echo $this->Form->input('campus_id', array('type' => 'text'));?></td>
             </tr>
             <tr>
                 <td></td>
