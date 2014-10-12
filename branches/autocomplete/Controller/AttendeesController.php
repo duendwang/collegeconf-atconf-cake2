@@ -1257,4 +1257,48 @@ class AttendeesController extends AppController {
                 $this->redirect(array('controller' => 'pages','action' => 'display','home'));
             }
         }
+
+/**
+ * autocomplete method
+ */
+        public function autocomplete($all = false) {
+            $this->Attendee->recursive = -1;
+            $this->autoRender = false;
+            if ($this->request->is('ajax')) {
+                $this->layout = 'ajax';
+                $query = $this->request->query('term');
+                
+                $conditions = array(
+                    //remove the leading '%' if you want to restrict the matches more
+                    'OR' => array(
+                        'Attendee.first_name LIKE' => '%' . $query . '%',
+                        'Attendee.last_name LIKE' => '%' . $query . '%',
+                    )
+                );
+                //TODO Add parameter to check what attendees it should return (active, registered, canceled excused and unexcused)
+                if ($all != true) {
+                    $conditions = array_merge($conditions, array(
+                    ));
+                }
+                
+                $localities = $this->Locality->find('all', array(
+                    'fields' => array('Locality.id','Locality.name'),
+                    'conditions' => $conditions,
+                    'order' => 'Locality.name',
+                ));
+                $i = 0;
+                foreach($localities as $locality):
+                    $response[$i]['value'] = $locality['Locality']['id'];
+                    $response[$i]['label'] = $locality['Locality']['name'];
+                    $i++;
+                endforeach;
+                echo json_encode($response);
+            } else {
+                //if the form wasn't submitted with JavaScript
+                //set a session variable with the search term in and redirect to index page
+                //$this->Session->write('companyName',$this->request->data['Company']['name']);
+                $this->Session->setflash('You have reached this page in error. Please use the links from the home page or from the registration team to navigate to where you need to go. If the problem persists, please contact the registration team for support.','failure');
+                $this->redirect(array('controller' => 'pages','action' => 'display','home'));
+            }
+        }
 }

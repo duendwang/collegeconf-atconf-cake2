@@ -93,5 +93,20 @@ $(document).ready(function(){
             $("#CampusName").val(ui.item.label);
         },
     });
+    $("#AttendeeLocalityName").autocomplete({
+        source: "../../localities/autocomplete/true",
+        minLength: 1,
+        focus: function(event, ui) {
+            $("#AttendeeLocalityId").val(ui.item.value);
+            event.preventDefault();
+            $("#AttendeeLocalityName").val(ui.item.label);
+            return false
+        },
+        select: function(event, ui) {
+            $("#AttendeeLocalityId").val(ui.item.value);
+            event.preventDefault();
+            $("#AttendeeLocalityName").val(ui.item.label);
+        }
+    });
 });
 </script>

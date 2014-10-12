@@ -181,8 +181,7 @@ class CampusesController extends AppController {
 		$this->Session->setFlash(__('Campus was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
-        
-        
+   
 /**
  * autocomplete method
  */
@@ -199,15 +198,14 @@ class CampusesController extends AppController {
                         'Campus.name LIKE' => '%' . $query . '%',
                         'Campus.code LIKE' => '%' . $query . '%',
                     ),
-                    //'Campus.name NOT LIKE' => 'Other%',
                 );
                 if ($all != true) {
-                    $conditions['Campus.name NOT LIKE'] = 'Other%';
+                    $conditions = array_merge($conditions, array('Campus.name NOT LIKE' => 'Other%'));
                 }
-                //debug($conditions);
                 $campuses = $this->Campus->find('all', array(
                     'fields' => array('Campus.id','Campus.name','Campus.code'),
                     'conditions' => $conditions,
+                    'Order' => 'Campus.name',
                 ));
                 
                 $i = 0;
