@@ -61,6 +61,8 @@ class Conference extends AppModel {
             $conference_info['start_date'] = strtotime($conference['Conference']['start_date']);
             $conference_info['end_date'] = strtotime('+3 days',$conference_info['start_date']);
             
+            //TODO add check to see if need to return current conference id only.
+            
             if ($pre_conf == true) {
                 $ConferenceDeadline = new ConferenceDeadline();
                 $deadlines = $ConferenceDeadline->find('all', array(
@@ -89,9 +91,6 @@ class Conference extends AppModel {
                     endforeach;
                 }
             }
-            
-            debug($conference_info);
-            exit;
             
             return $conference_info;
         }
