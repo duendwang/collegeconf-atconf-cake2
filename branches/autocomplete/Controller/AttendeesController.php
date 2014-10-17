@@ -1214,57 +1214,14 @@ class AttendeesController extends AppController {
 		$this->Session->setFlash(__('Attendee was not deleted'));
 		$this->redirect(array('action' => 'index'));
 	}
-        
-/**
- * autocomplete method
- */
-        public function autocomplete() {
-            $this->Attendee->Campus->recursive = -1;
-            if ($this->request->is('ajax')) {
-                $this->redirect(array('controller' => 'attendees', 'action' => 'index'));
-                $this->autoRender = false;
-                $this->layout = 'ajax';
-                debug($_GET['term']);
-                debug($this->request);
-                //$query = $_GET['term'];
-                $query = $this->request->query('term');
-                $campuses = $this->Attendee->Campus->find('all', array(
-                    'fields' => array('Campus.name','Campus.code'),
-                    //remove the leading '%' if you want to restrict the matches more
-                    'conditions' => array(
-                        'OR',array(
-                            'Campus.name LIKE ' => '%' . $query . '%',
-                            'Campus.code LIKE ' => '%' . $query . '%',
-                        ),
-                        'Campus.name NOT LIKE' => 'Other%',
-                )));
-                $i = 0;
-                foreach($campuses as $campus):
-                    $response[$i]['id'] = $campus['Campus']['id'];
-                    if (notempty($campus['Campus']['code'])) {
-                        $response['display'] = $campus['Campus']['name'].' ('.$campus['Campus']['code'].')';
-                    } else {
-                        $response['display'] = $campus['Campus']['name'];
-                    }
-                    $i++;
-                endforeach;
-                echo json_encode($response);
-            } else {
-                //if the form wasn't submitted with JavaScript
-                //set a session variable with the search term in and redirect to index page
-                //$this->Session->write('companyName',$this->request->data['Company']['name']);
-                $this->Session->setflash('You have reached this page in error. Please use the links from the home page or from the registration team to navigate to where you need to go. If the problem persists, please contact the registration team for support.','failure');
-                $this->redirect(array('controller' => 'pages','action' => 'display','home'));
-            }
-        }
 
 /**
  * autocomplete method
  */
-        public function autocomplete($all = false) {
+        public function autocomplete($type = null, $locality = null) {
             $this->Attendee->recursive = -1;
             $this->autoRender = false;
-            if ($this->request->is('ajax')) {
+            //if ($this->request->is('ajax')) {
                 $this->layout = 'ajax';
                 $query = $this->request->query('term');
                 
@@ -1275,30 +1232,158 @@ class AttendeesController extends AppController {
                         'Attendee.last_name LIKE' => '%' . $query . '%',
                     )
                 );
-                //TODO Add parameter to check what attendees it should return (active, registered, canceled excused and unexcused)
-                if ($all != true) {
-                    $conditions = array_merge($conditions, array(
+                
+                //Restrict by locality if locality is given
+                if (!empty($locality)) {
+                    if (!$this->Attendee->Locality->exists($locality)) {
+			throw new NotFoundException(__('Invalid locality'));
+                    }
+                    
+                    $conditions = array_merge($conditions,array(
+                        'Attendee.locality_id' => $locality,
                     ));
                 }
                 
-                $localities = $this->Locality->find('all', array(
-                    'fields' => array('Locality.id','Locality.name'),
+                //Add more conditions based on search type in $type
+                $conference = $this->Attendee->Conference->conference_info(true);
+                if ($type != null) {
+                    $constraints = str_split($type,2);
+                    foreach($constraints as $constraint):
+                        switch ($constraint):
+                            case 'r1':
+                                //Registered < first deadline
+                                $conditions = array_merge($conditions,array(
+                                    'Attendee.created <=' => date('Y-m-d H:i:s',$conference['first_deadline']),
+                                ));
+                                break;
+                            case 'r2':
+                                //Registered < second deadline
+                                $conditions = array_merge($conditions,array(
+                                    'Attendee.created <=' => date('Y-m-d H:i:s',$conference['second_deadline']),
+                                ));
+                                break;
+                            case 'r3':
+                                //Registered > first deadline
+                                $conditions = array_merge($conditions,array(
+                                    'Attendee.created >=' => date('Y-m-d H:i:s',$conference['first_deadline']),
+                                ));
+                                break;
+                            case 'ro':
+                                //Registered on-site
+                                $conditions = array_merge($conditions,array(
+                                    'Attendee.created >=' => date('Y-m-d H:i:s',$conference['start_date']),
+                                ));
+                                break;
+                            case 'ci':
+                                //Checked in
+                                $conditions = array_merge($conditions,array(
+                                    'CheckIn.id NOT' => null,
+                                ));
+                                break;
+                            case 'nc':
+                                //Not checked-in
+                                $conditions = array_merge($conditions,array(
+                                    'CheckIn.id' => null,
+                                ));
+                                break;
+                            case 'cn':
+                                //Canceled at any time (all attendees who registered and are no longer coming, regardless the reason)
+                                $conditions = array_merge($conditions,array(
+                                    'Cancel.id NOT' => null,
+                                ));
+                                break;
+                            case 'c1':
+                                //Canceled < first deadline
+                                $conditions = array_merge($conditions,array(
+                                    'Cancel.created <=' => date('Y-m-d H:i:s',$conference['first_deadline']),
+                                ));
+                                break;
+                            case 'c2':
+                                //Canceled < second deadline
+                                $conditions = array_merge($conditions,array(
+                                    'Cancel.created <=' => date('Y-m-d H:i:s',$conference['second_deadline']),
+                                ));
+                                break;
+                            case 'c3':
+                                //Canceled > first deadline
+                                $conditions = array_merge($conditions,array(
+                                    'Cancel.created >=' => date('Y-m-d H:i:s',$conference['first_deadline']),
+                                ));
+                                break;
+                            case 'co':
+                                //Canceled on-site
+                                $conditions = array_merge($conditions,array(
+                                    'Cancel.created >=' => date('Y-m-d H:i:s',$conference['start_date']),
+                                ));
+                                break;
+                            case 'ex':
+                                //Excused cancel
+                                break;
+                            case 'ne':
+                                //Not excused
+                                break;
+                            case 'ac':
+                                //Not canceled
+                                $conditions = array_merge($conditions,array(
+                                    'Cancel.id' => null,
+                                ));
+                                break;
+                            case 'rp':
+                                //Replaced
+                                $conditions = array_merge($conditions,array(
+                                    'Cancel.replaced NOT' => null,
+                                ));
+                                break;
+                            case 'nr':
+                                //Not replaced
+                                $conditions = array_merge($conditions,array(
+                                    'Cancel.replaced' => null,
+                                ));
+                                break;
+                            case 'la':
+                                //Lodging assigned
+                                $conditions = array_merge($conditions,array(
+                                    'Attendee.lodging_id NOT' => null,
+                                ));
+                                break;
+                            case 'lw':
+                                //Waiting for lodging
+                                break;
+                            case 'nl':
+                                //No lodging requested
+                                $conditions = array_merge($conditions,array(
+                                    'Attendee.lodging_id' => null,
+                                ));
+                                break;
+                        endswitch;
+                    endforeach;
+                }
+                
+                $attendees = $this->Attendee->find('all', array(
+                    'fields' => array('Attendee.id','Attendee.name'),
                     'conditions' => $conditions,
-                    'order' => 'Locality.name',
+                    'contain' => $this->Attendee->contain,
+                    'order' => array(
+                        'Attendee.last_name' => 'ASC',
+                        'Attendee.first_name' => 'ASC',
+                    ),
+                    'recursive' => -1,
                 ));
+                
+                //Processing results into json format
                 $i = 0;
-                foreach($localities as $locality):
-                    $response[$i]['value'] = $locality['Locality']['id'];
-                    $response[$i]['label'] = $locality['Locality']['name'];
+                foreach($attendees as $attendee):
+                    $response[$i]['value'] = $attendee['Attendee']['id'];
+                    $response[$i]['label'] = $attendee['Attendee']['name'];
                     $i++;
                 endforeach;
                 echo json_encode($response);
-            } else {
+            /**} else {
                 //if the form wasn't submitted with JavaScript
                 //set a session variable with the search term in and redirect to index page
                 //$this->Session->write('companyName',$this->request->data['Company']['name']);
                 $this->Session->setflash('You have reached this page in error. Please use the links from the home page or from the registration team to navigate to where you need to go. If the problem persists, please contact the registration team for support.','failure');
                 $this->redirect(array('controller' => 'pages','action' => 'display','home'));
-            }
+            }**/
         }
 }
