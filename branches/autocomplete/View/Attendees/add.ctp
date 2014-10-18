@@ -34,7 +34,8 @@
             </tr>
             <tr>
                 <td></td>
-                <td colspan="2"><?php echo $this->Form->input('campus_id', array('empty' => true, 'default' => null));?></td>
+                <td colspan="2"><?php echo $this->Form->input('campus_name', array('label' => 'Campus'));
+                                        echo $this->Form->hidden('campus_id', array('type' => 'text'));?></td>
             </tr>
             <tr>
                 <td></td>
@@ -48,12 +49,13 @@
             </tr>
             <tr>
                 <td></td>
-                <td><?php echo $this->Form->input('locality_id',array('empty' => true,'default' => null));?></td>
+                <td><?php echo $this->Form->input('locality_name', array('label' => 'Locality'));
+                            echo $this->Form->hidden('locality_id', array('type' => 'text'));?></td>
                 <td><?php echo $this->Form->input('paid_at_conf',array('label' => 'Amount Paid'));?></td>
             </tr>
             <tr>
                 <td></td>
-                <td><?php echo $this->Form->input('CheckIn.timestamp',array('label' => 'Check in Time'));?></td>
+                <td colspan="2"><?php echo $this->Form->input('CheckIn.timestamp',array('label' => 'Check in Time'));?></td>
             </tr>
             <tr>
                 <td></td>
@@ -114,3 +116,37 @@
     </fieldset>
 <?php echo $this->Form->end('Submit'); ?>
 </div>
+<script>
+$(document).ready(function(){  
+    $("#AttendeeCampusName").autocomplete({
+        source: "../campuses/autocomplete/true",
+        minLength: 2,
+        focus: function(event, ui) {
+            $("#AttendeeCampusId").val(ui.item.value);
+            event.preventDefault();
+            $("#AttendeeCampusName").val(ui.item.label);
+            return false
+        },
+        select: function(event, ui) {
+            $("#AttendeeCampusId").val(ui.item.value);
+            event.preventDefault();
+            $("#AttendeeCampusName").val(ui.item.label);
+        }
+    });
+    $("#AttendeeLocalityName").autocomplete({
+        source: "../localities/autocomplete/true",
+        minLength: 1,
+        focus: function(event, ui) {
+            $("#AttendeeLocalityId").val(ui.item.value);
+            event.preventDefault();
+            $("#AttendeeLocalityName").val(ui.item.label);
+            return false
+        },
+        select: function(event, ui) {
+            $("#AttendeeLocalityId").val(ui.item.value);
+            event.preventDefault();
+            $("#AttendeeLocalityName").val(ui.item.label);
+        }
+    });
+});
+</script>
