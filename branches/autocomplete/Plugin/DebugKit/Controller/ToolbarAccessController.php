@@ -88,8 +88,6 @@ class ToolbarAccessController extends DebugKitAppController {
 		$oldState = $this->Toolbar->loadState($key);
 		$this->set('toolbarState', $oldState);
 		$this->set('debugKitInHistoryMode', true);
-		$this->viewClass = null;
-		$this->layout = null;
 	}
 
 /**
@@ -110,7 +108,7 @@ class ToolbarAccessController extends DebugKitAppController {
 		) {
 			throw new BadRequestException('Invalid parameters');
 		}
-		$hash = Security::hash($this->request->data['log']['sql'] . $this->request->data['log']['ds'], 'sha1', true);
+		$hash = Security::hash($this->request->data['log']['sql'] . $this->request->data['log']['ds'], null, true);
 		if ($hash !== $this->request->data['log']['hash']) {
 			throw new BadRequestException('Invalid parameters');
 		}

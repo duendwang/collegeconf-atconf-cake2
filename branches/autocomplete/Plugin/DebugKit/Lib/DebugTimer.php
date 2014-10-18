@@ -1,5 +1,9 @@
 <?php
 /**
+ * Contains methods for Profiling and creating timers.
+ *
+ * PHP 5
+ *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
@@ -15,8 +19,9 @@
 App::uses('Debugger', 'Utility');
 
 /**
- * Contains methods for Profiling and creating timers.
+ * Class DebugTimer
  *
+ * @since         DebugKit 0.1
  */
 class DebugTimer {
 

@@ -1,5 +1,11 @@
 <?php
 /**
+ * Variables Panel
+ *
+ * Provides debug information on the View variables.
+ *
+ * PHP 5
+ *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
@@ -14,7 +20,7 @@
 App::uses('DebugPanel', 'DebugKit.Lib');
 
 /**
- * Provides debug information on the View variables.
+ * Class VariablesPanel
  *
  */
 class VariablesPanel extends DebugPanel {

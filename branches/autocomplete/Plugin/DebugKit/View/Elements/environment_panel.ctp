@@ -39,8 +39,8 @@
 		$cakeRows = array();
 		foreach ($content['cake'] as $key => $val) {
 			$cakeRows[] = array(
-				h($key),
-				h($val)
+				$key,
+				$val
 			);
 		}
 		$headers = array('Constant', 'Value');
@@ -57,8 +57,8 @@
 		$phpRows = array();
 		foreach ($content['php'] as $key => $val) {
 			$phpRows[] = array(
-				h(Inflector::humanize(strtolower($key))),
-				h($val)
+				Inflector::humanize(strtolower($key)),
+				$val
 			);
 		}
 		echo $this->Toolbar->table($phpRows, $headers, array('title' => 'CakePHP Environment Vars'));
@@ -72,8 +72,8 @@
 			$cakeRows = array();
 			foreach ($content['hidef'] as $key => $val) {
 				$cakeRows[] = array(
-					h($key),
-					h($val)
+					$key,
+					$val
 				);
 			}
 			$headers = array('Constant', 'Value');
