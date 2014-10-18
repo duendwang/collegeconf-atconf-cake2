@@ -36,7 +36,7 @@
 		<tr>
 			<td width=50></td>
 			<td><?php echo $this->Form->input('status_id', array('label' => 'Current Status','empty' => true, 'default' => null));?></td>
-			<td colspan="2"><?php echo $this->Form->input('campus_id', array('label' => 'College Campus','empty' => true));?></td>
+			<td colspan="2"><?php echo $this->Form->input('campus_id', array('type' => 'text','label' => 'College Campus'));?></td>
 		</tr>
 		<tr>
 			<td width=50></td>
@@ -109,35 +109,20 @@
         </table>
 <?php echo $this->Form->end(); ?>
 </div>
-<!--<div class="actions">
-	<h3><?php //echo __('Actions'); ?></h3>
-	<ul>
-
-		<li><?php /**echo $this->Html->link(__('List Attendees'), array('action' => 'index')); ?></li>
-		<li><?php echo $this->Html->link(__('List Conferences'), array('controller' => 'conferences', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Conference'), array('controller' => 'conferences', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Localities'), array('controller' => 'localities', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Locality'), array('controller' => 'localities', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Campuses'), array('controller' => 'campuses', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Campus'), array('controller' => 'campuses', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Statuses'), array('controller' => 'statuses', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Status'), array('controller' => 'statuses', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Lodgings'), array('controller' => 'lodgings', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Lodging'), array('controller' => 'lodgings', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Check Ins'), array('controller' => 'check_ins', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Check In'), array('controller' => 'check_ins', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Onsite Registrations'), array('controller' => 'onsite_registrations', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Onsite Registration'), array('controller' => 'onsite_registrations', 'action' => 'add')); ?> </li>
-		<li><?php echo $this->Html->link(__('List Part Time Registrations'), array('controller' => 'part_time_registrations', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Part Time Registration'), array('controller' => 'part_time_registrations', 'action' => 'add')); **/?> </li>
-	</ul>
-</div>-->
-<?php /**
 <script>
-$(document).ready(function(){  
-    $("AttendeeCampusId").autocomplete("/Attendees/find.json", {
-    minChars: 3
+$(document).ready(function(){
+    $("#AttendeeCampusId").autocomplete({
+        source: "../campuses/autocomplete",
+        minLength: 2,
+        focus: function(event, ui) {
+            event.preventDefault();
+            $("#AttendeeCampusId").val(ui.item.label);
+            return false
+        },
+        select: function(event, ui) {
+            event.preventDefault();
+            $("#AttendeeCampusId").val(ui.item.label);
+        }
     });
-  });
+});
 </script>
- **/?>
