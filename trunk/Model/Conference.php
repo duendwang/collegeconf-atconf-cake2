@@ -1,5 +1,6 @@
 <?php
 App::uses('AppModel', 'Model');
+App::uses('ConferenceDeadline', 'Model');
 /**
  * Conference Model
  *
@@ -15,11 +16,11 @@ App::uses('AppModel', 'Model');
  * @property RegistrationStep $RegistrationStep
  */
 class Conference extends AppModel {
-    
+
     //App::uses('CakeSession', 'Model/Datasource');
 
 /*
- * function currentTermConferences
+ * function currentConference
  * 
  * return array
  * 
@@ -40,21 +41,57 @@ class Conference extends AppModel {
     }
 
 /**
- * conferenceDates method
+ * conferenceInfo method
  * 
  * @return array
  */
 
-        public function conference_info($conference_id = null) {
+        public function conference_info($conference_id = null, $pre_conf = false) {
             if ($conference_id == null) {
                 $conference_id = $this->current_conference();
+            } elseif ($conference_id === true) {
+                $conference_id = $this->current_conference();
+                $pre_conf = true;
             }
+            
             $conference = $this->find('first',array('conditions' => array('Conference.id' => $conference_id),'fields' => array('Conference.start_date','Conference.conference_location_id','Conference.code'),'recursive' => -1));
-
+            
             $conference_info['code'] = $conference['Conference']['code'];
             $conference_info['location'] = $conference['Conference']['conference_location_id'];
             $conference_info['start_date'] = strtotime($conference['Conference']['start_date']);
-            $conference_info['end_date'] = strtotime('+2 days',$conference_info['start_date']);
+            $conference_info['end_date'] = strtotime('+3 days',$conference_info['start_date']);
+            
+            //TODO add check to see if need to return current conference id only.
+            
+            if ($pre_conf == true) {
+                $ConferenceDeadline = new ConferenceDeadline();
+                $deadlines = $ConferenceDeadline->find('all', array(
+                    'conditions' => array('ConferenceDeadline.id' => array(6,8)),
+                    'recursive' => 0
+                ));
+                $exceptions = $this->ConferenceDeadlineException->find('all', array(
+                    'conditions' => array(
+                        'ConferenceDeadlineException.conference_id' => $conference_id,
+                        'ConferenceDeadlineException.conference_deadline_id' => array(6,8),
+                    ),
+                    'recursive' => -1,
+                ));
+                
+                $deadline_array = array(
+                    6 => 'first_deadline',
+                    8 => 'second_deadline'
+                );
+                foreach($deadlines as $deadline):
+                    $conference_info[$deadline_array[$deadline['ConferenceDeadline']['id']]] = strtotime($deadline['Weekday']['name'] . ' ' . ($deadline['ConferenceDeadline']['weeks_before']-1) . ' weeks ago ' . $deadline['ConferenceDeadline']['time'],$conference_info['start_date']);
+                endforeach;
+                
+                if (!empty($exceptions)) {
+                    foreach($exceptions as $exception):
+                        $conference_info[$deadline_array[$exception['ConferenceDeadlineException']['conference_deadline_id']]] = strtotime($exception['ConferenceDeadlineException']['date'] . ' ' . $exception['ConferenceDeadlineException']['time']);
+                    endforeach;
+                }
+            }
+            
             return $conference_info;
         }
 
