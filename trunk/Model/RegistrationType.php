@@ -1,11 +1,11 @@
 <?php
 App::uses('AppModel', 'Model');
 /**
- * RateType Model
+ * RegistrationType Model
  *
  * @property Rate $Rate
  */
-class RateType extends AppModel {
+class RegistrationType extends AppModel {
 
 /**
  * Display field
@@ -42,7 +42,7 @@ class RateType extends AppModel {
 	public $hasMany = array(
 		'Rate' => array(
 			'className' => 'Rate',
-			'foreignKey' => 'rate_type_id',
+			'foreignKey' => 'registration_type_id',
 			'dependent' => false,
 			'conditions' => '',
 			'fields' => '',
@@ -52,7 +52,20 @@ class RateType extends AppModel {
 			'exclusive' => '',
 			'finderQuery' => '',
 			'counterQuery' => ''
-		)
+		),
+                'Attendee' => array(
+			'className' => 'Attendee',
+			'foreignKey' => 'registration_type_id',
+			'dependent' => false,
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'exclusive' => '',
+			'finderQuery' => '',
+			'counterQuery' => ''
+		),
 	);
 
 }
