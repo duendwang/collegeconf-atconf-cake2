@@ -88,7 +88,7 @@ class Rate extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'rate_type_id' => array(
+		'registration_type_id' => array(
 			'numeric' => array(
 				'rule' => array('numeric'),
 				//'message' => 'Your custom message here',
@@ -145,9 +145,9 @@ class Rate extends AppModel {
 			'fields' => '',
 			'order' => ''
 		),
-		'RateType' => array(
-			'className' => 'RateType',
-			'foreignKey' => 'rate_type_id',
+		'RegistrationType' => array(
+			'className' => 'RegistrationType',
+			'foreignKey' => 'registration_type_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''

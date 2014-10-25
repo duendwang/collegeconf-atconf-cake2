@@ -14,6 +14,7 @@ App::uses('AppModel', 'Model');
  * @property Lodging $Lodging
  * @property User $Creator
  * @property User $Modifier
+ * @property RegistrationType $RegistrationType
  * @property Payment $Payment
  * @property AttendeeFinance $AttendeeFinance
  * @property AttendeeFinance $AttendeeFinanceCancel
@@ -486,6 +487,13 @@ class Attendee extends AppModel {
 		'Modifier' => array(
 			'className' => 'User',
 			'foreignKey' => 'modifier_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		),
+                'RegistrationType' => array(
+			'className' => 'RegistrationType',
+			'foreignKey' => 'registration_type_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
