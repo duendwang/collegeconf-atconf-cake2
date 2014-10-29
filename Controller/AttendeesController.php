@@ -256,6 +256,9 @@ class AttendeesController extends AppController {
 			throw new NotFoundException(__('Invalid attendee'));
 		}
 		$this->request->onlyAllow('post', 'excuse_cancellation');
+                
+                //TODO Check if attendee is excused/replaced already before continuing.
+                
                 $attendee = $this->Attendee->find('first',array('conditions' => array('Attendee.id' => $id),'recursive' => -1));
 		$this->request->data['Finance'] = array(
                     'conference_id' => $attendee['Attendee']['conference_id'],
