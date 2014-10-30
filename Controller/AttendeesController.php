@@ -250,7 +250,7 @@ class AttendeesController extends AppController {
  * 
  * @return void
  */
-        public function excuse_cancellation($id) {
+        public function excuse_cancellation($id, $unexcuse = false) {
                 $this->Attendee->id = $id;
 		if (!$this->Attendee->exists()) {
 			throw new NotFoundException(__('Invalid attendee'));
@@ -260,27 +260,38 @@ class AttendeesController extends AppController {
                 //TODO Check if attendee is excused/replaced already before continuing.
                 
                 $attendee = $this->Attendee->find('first',array('conditions' => array('Attendee.id' => $id),'recursive' => -1));
-		$this->request->data['Finance'] = array(
-                    'conference_id' => $attendee['Attendee']['conference_id'],
-                    'receive_date' => date('Y-m-d'),
-                    'locality_id' => $attendee['Attendee']['locality_id'],
-                    'finance_type_id' => 4,
-                    'count' => -1,
-                    'rate' => $attendee['Attendee']['rate'],
-                    'charge' => '',
-                    'payment' => '',
-                    'balance' => '0.00',
-                    'comment' => 'Excused',
-                );
-                $this->request->data['FinanceAttendee'][0] = array(
-                    'cancel_attendee_id' => $id,
-                );
-                if ($this->Attendee->AttendeeFinanceCancel->Finance->saveAssociated($this->request->data,array('validate' => true,'deep' => true))) {
-                    $this->Session->setFlash(__('Cancellation excused'),'success');
-			$this->redirect(array('action' => 'cancel_report'));
-		}
-		$this->Session->setFlash(__('Not able to be excused'),'failure');
-		$this->redirect(array('action' => 'cancel_report'));
+                
+               //TODO This is wrong. Need to check cancel_count instead
+                if (empty($attendee['AttendeeFinanceCancel'])) {
+                    $this->request->data['Finance'] = array(
+                        'conference_id' => $attendee['Attendee']['conference_id'],
+                        'receive_date' => date('Y-m-d'),
+                        'locality_id' => $attendee['Attendee']['locality_id'],
+                        'finance_type_id' => 4,
+                        'count' => -1,
+                        'rate' => $attendee['Attendee']['rate'],
+                        'charge' => '',
+                        'payment' => '',
+                        'balance' => '0.00',
+                        'comment' => 'Excused',
+                    );
+                    $this->request->data['FinanceAttendee'][0] = array(
+                        'cancel_attendee_id' => $id,
+                    );
+                    if ($this->Attendee->AttendeeFinanceCancel->Finance->saveAssociated($this->request->data,array('validate' => true,'deep' => true))) {
+                        $this->Session->setFlash(__('Cancellation excused'),'success');
+                        $this->redirect(array('action' => 'cancel_report'));
+                    } else {
+                        $this->Session->setFlash(__('Not able to be excused'),'failure');
+                        $this->redirect(array('action' => 'cancel_report'));
+                    }
+                } elseif (empty($attendee['AttendeeFinanceCancel'])) {
+                    $this->Session->setFlash(__('Attendee cancellation is already excused'),'warning');
+                    $this->redirect($this->referer());
+                } else {
+                    $this->Session->setFlash(__('Attendee is not canceled'),'warning');
+                    $this->redirect($this->referer());
+                }
         }
 
 /*
@@ -336,11 +347,12 @@ class AttendeesController extends AppController {
                         $this->Session->setFlash(__('Attendee is already replaced'),'failure');
                         $this->redirect(array('action' => 'cancel_report'));
                     } elseif ($excused == 0) {
+                        //TODO This is wrong. A non-excused canceled attendee does not have AttendeeFinanceCancel and would never reach this part
                         $this->Session->setFlash(__('Attendee cancellation is not excused'),'failure');
                         $this->redirect(array('action' => 'cancel_report'));
                     }
                 } else {
-                    $this->Session->setFlash(__('Attendee is not canceled'),'failure');
+                    $this->Session->setFlash(__('No excused cancellation to reverse'),'failure');
                     $this->redirect($this->referer());
                 }
         }
@@ -362,6 +374,7 @@ class AttendeesController extends AppController {
                 $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0,'Attendee.cancel_count' => 0)));
                 
                 //Construct time breakdowns
+                //TODO use time slots table in database
                 $time_slots = array(
                     //Anaheim time slots
                     'FriD' => array(
