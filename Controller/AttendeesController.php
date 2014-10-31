@@ -257,12 +257,10 @@ class AttendeesController extends AppController {
 		}
 		$this->request->onlyAllow('post', 'excuse_cancellation');
                 
-                //TODO Check if attendee is excused/replaced already before continuing.
-                
                 $attendee = $this->Attendee->find('first',array('conditions' => array('Attendee.id' => $id),'recursive' => -1));
                 
-               //TODO This is wrong. Need to check cancel_count instead
-                if (empty($attendee['AttendeeFinanceCancel'])) {
+               //TODO This is wrong. Need to check cancel_count also
+                if (empty($attendee['AttendeeFinanceCancel']) && $attendee['Attendee']['cancel_count'] == 1) {
                     $this->request->data['Finance'] = array(
                         'conference_id' => $attendee['Attendee']['conference_id'],
                         'receive_date' => date('Y-m-d'),
@@ -285,11 +283,11 @@ class AttendeesController extends AppController {
                         $this->Session->setFlash(__('Not able to be excused'),'failure');
                         $this->redirect(array('action' => 'cancel_report'));
                     }
-                } elseif (empty($attendee['AttendeeFinanceCancel'])) {
-                    $this->Session->setFlash(__('Attendee cancellation is already excused'),'warning');
+                } elseif ($attendee['Attendee']['cancel_count'] != 1) {
+                    $this->Session->setFlash(__('Attendee is not canceled'),'failure');
                     $this->redirect($this->referer());
                 } else {
-                    $this->Session->setFlash(__('Attendee is not canceled'),'warning');
+                    $this->Session->setFlash(__('Attendee cancellation is already excused or replaced'),'warning');
                     $this->redirect($this->referer());
                 }
         }
@@ -368,14 +366,14 @@ class AttendeesController extends AppController {
                 $start_date = strtotime($conference['Conference']['start_date']);
 
                 $checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0)));
-                $high_school_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 1)));
+                //$high_school_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 1)));
                 $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5))));
                 $canceled_count = $this->Attendee->find('count',array('conditions' => array('Attendee.cancel_count >' => 0,'Cancel.created >' => $conference['Conference']['start_date'])));
                 $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0,'Attendee.cancel_count' => 0)));
                 
                 //Construct time breakdowns
                 //TODO use time slots table in database
-                $time_slots = array(
+                /**$time_slots = array(
                     //Anaheim time slots
                     'FriD' => array(
                         'name' => 'Friday Dinner',
@@ -432,9 +430,9 @@ class AttendeesController extends AppController {
                         'start' => date('Y-m-d H:i:s',strtotime('+2 day 11:00:00',$start_date)),
                         'end' => date('Y-m-d H:i:s',strtotime('+2 day 13:00:00',$start_date)),
                     ),
-                );
+                );**/
                 
-                /**$time_slots = array(
+                $time_slots = array(
                     //Big Bear time slots
                     'FriPM' => array(
                         'name' => 'Friday Meeting',
@@ -481,7 +479,7 @@ class AttendeesController extends AppController {
                         'start' => date('Y-m-d H:i:s',strtotime('+2 day 09:00:00',$start_date)),
                         'end' => date('Y-m-d H:i:s',strtotime('+2 day 13:00:00',$start_date)),
                     ),
-                );**/
+                );
                 
                 foreach($time_slots as &$time_slot):
                     $time_slot['count'] = $this->Attendee->CheckIn->find('count',array('conditions' => array('CheckIn.timestamp >' => $time_slot['start'],'CheckIn.timestamp <' => $time_slot['end'])));
