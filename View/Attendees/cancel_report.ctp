@@ -31,7 +31,13 @@
             <td><?php echo h($cancellation['Attendee']['gender']); ?>&nbsp;</td>
             <td><?php echo h($cancellation['Attendee']['rate']); ?>&nbsp;</td>
             <td><?php echo h($cancellation['Cancel']['created']); ?>&nbsp;</td>
-            <td><?php echo h($cancellation['Cancel']['reason']); ?>&nbsp;</td>
+            <td>
+                <?php if ($cancellation['Attendee']['cancel_count'] == 1 && !empty($cancellation['AttendeeFinanceCancel'])) {
+                    echo 'Excused: '.h($cancellation['Cancel']['reason']);
+                } else {
+                    echo h($cancellation['Cancel']['reason']);
+                } ?> &nbsp;
+            </td>
             <td class="actions">
                 <?php if($cancellation['Attendee']['cancel_count'] == 1) {
                     if (!empty($cancellation['AttendeeFinanceCancel'])) {

@@ -144,9 +144,16 @@ class CancelsController extends AppController {
 		if (!$this->Cancel->exists()) {
 			throw new NotFoundException(__('Invalid cancel'));
 		}
-                $attendee = $this->Cancel->Attendee->find('first',array('conditions' => array('Attendee.id' => $this->Cancel->field('attendee_id',array('id' => $id))),'contain' => array('Lodging'),'recursive' => -1));
+                $attendee = $this->Cancel->Attendee->find('first',array('conditions' => array('Attendee.id' => $this->Cancel->field('attendee_id',array('id' => $id))),'contain' => array('Lodging','AttendeeFinanceCancel'),'recursive' => -1));
                 $lodging = $this->Cancel->Attendee->Lodging->find('first',array('conditions' => array('Lodging.id' => $attendee['Attendee']['lodging_id']),'recursive' => -1));
 		$this->request->onlyAllow('post', 'delete');
+                
+                //Check if attendee is excused or replaced
+                if (!empty($attendee['AttendeeFinanceCancel'])) {
+                    $this->Session->setFlash(__('Attendee is already excused or replaced. Unexcuse or undo replacement first before reversing cancel.'),'failure');
+                    $this->redirect($this->referer());
+                }
+                
 		if ($this->Cancel->delete()) {
                         if ($attendee['Attendee']['lodging_id'] !== null) {
                             $this->Cancel->Attendee->Lodging->save(array('id' => $lodging['Lodging']['id'],'attendee_count' => $lodging['Lodging']['attendee_count'] + 1),false);

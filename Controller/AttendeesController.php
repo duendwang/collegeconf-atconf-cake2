@@ -368,8 +368,17 @@ class AttendeesController extends AppController {
                 $checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0)));
                 //$high_school_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 1)));
                 $college_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => array(2,3,4,5))));
+                $freshmen_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 2)));
+                $soph_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 3)));
+                $jr_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 4)));
+                $senior_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 5)));
+                $grad_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count >' => 0,'Attendee.status_id' => 9)));
                 $canceled_count = $this->Attendee->find('count',array('conditions' => array('Attendee.cancel_count >' => 0,'Cancel.created >' => $conference['Conference']['start_date'])));
                 $not_checked_in_count = $this->Attendee->find('count',array('conditions' => array('Attendee.check_in_count =' => 0,'Attendee.cancel_count' => 0)));
+                
+                $engedi_lodgings = $this->Attendee->Lodging->find('list',array('conditions' => array('Lodging.conference_id' => $conference['Conference']['id'],'Lodging.name' => 'Engedi'),'fields' => array('Lodging.id'),'recursive' => -1));
+                $fri_engedi = $this->Attendee->find('count',array('conditions' => array('Attendee.conference_id' => $conference['Conference']['id'],'Attendee.lodging_id' => $engedi_lodgings,'Attendee.check_in_count' => 1,'CheckIn.timestamp <' => date('Y-m-d H:i:s',strtotime('+1 day 06:00:00'))),'contain' => $this->Attendee->contain));
+                $sat_engedi = $this->Attendee->find('count',array('conditions' => array('Attendee.conference_id' => $conference['Conference']['id'],'Attendee.lodging_id' => $engedi_lodgings,'Attendee.check_in_count' => 1,'CheckIn.timestamp <' => date('Y-m-d H:i:s',strtotime('+2 day 06:00:00')))));
                 
                 //Construct time breakdowns
                 //TODO use time slots table in database
@@ -485,7 +494,7 @@ class AttendeesController extends AppController {
                     $time_slot['count'] = $this->Attendee->CheckIn->find('count',array('conditions' => array('CheckIn.timestamp >' => $time_slot['start'],'CheckIn.timestamp <' => $time_slot['end'])));
                 endforeach;
                 
-                $this->set(compact('time_slots','checked_in_count','high_school_count','college_count','canceled_count','not_checked_in_count'));
+                $this->set(compact('time_slots','checked_in_count','high_school_count','college_count','freshmen_count','soph_count','jr_count','senior_count','grad_count','canceled_count','not_checked_in_count','fri_engedi','sat_engedi'));
 	}
 
 /*
@@ -522,6 +531,7 @@ class AttendeesController extends AppController {
                     'OnsiteRegistration',
                     'PartTimeRegistration',
                     'Payment',
+                    'AttendeeFinanceCancel'
                 ));
 		$options = array('conditions' => array('Attendee.' . $this->Attendee->primaryKey => $id),'contain' => $contain);
 		$attendee = $this->Attendee->find('first', $options);
@@ -557,14 +567,16 @@ class AttendeesController extends AppController {
                         $this->request->data['Attendee']['first_name'] = ucwords($this->request->data['Attendee']['first_name']);
                         $this->request->data['Attendee']['last_name'] = ucwords($this->request->data['Attendee']['last_name']);
                         
-                        //Changes group field to all caps
-                        $this->request->data['Attendee']['group'] = strtoupper($this->request->data['Attendee']['group']);
-                        
                         //Sets rate based on registration type
                         //Get rate structure
                         $conference = $this->Attendee->Conference->find('first',array('conditions' => array('Conference.id' => $this->request->data['Attendee']['conference_id']),'recursive' => -1));
                         $conference_location = $conference['Conference']['conference_location_id'];
                         $rates = $this->Attendee->Conference->ConferenceLocation->Rate->conference_rates($conference_location);
+                        
+                        //Changes group field to all caps
+                        if ($conference['Conference']['term'] == 'Spring') {
+                            $this->request->data['Attendee']['group'] = strtoupper($this->request->data['Attendee']['group']);
+                        }
                         
                         $finance_comment = '';
                         

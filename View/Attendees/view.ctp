@@ -85,7 +85,13 @@
         <?php if ($attendee['Cancel']['id'] !== null) { ?>
             <dl>
 		<dt><?php echo __('Reason'); ?></dt>
-		<dd><?php echo $attendee['Cancel']['reason']; ?>&nbsp;</dd>
+		<dd>
+                    <?php if (!empty($attendee['AttendeeFinanceCancel'])) {
+                        echo 'Excused: '.$attendee['Cancel']['reason'];
+                    } else {
+                        echo $attendee['Cancel']['reason'];
+                    } ?>&nbsp;
+                </dd>
 		<dt><?php echo __('Replaced by'); ?></dt>
                 <dd><?php echo $attendee['Cancel']['replaced']; ?>&nbsp;</dd>
 		<dt><?php echo __('Comment'); ?></dt>
