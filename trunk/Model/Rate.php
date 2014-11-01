@@ -1,4 +1,4 @@
-<?php
+    <?php
 App::uses('AppModel', 'Model');
 /**
  * Rate Model
@@ -19,7 +19,7 @@ class Rate extends AppModel {
         public function conference_rates ($conference_location = null) {
             $conference_rates = $this->find('all',array('conditions' => array('Rate.conference_location_id' => $conference_location),'recursive' => 0));
             foreach ($conference_rates as $rate):
-                switch ($rate['Rate']['rate_type_id']) {
+                switch ($rate['Rate']['registration_type_id']) {
                     case 1:
                         $rates['ft']['cost'] = $rate['Rate']['cost'];
                         $rates['ft']['latefee_applies'] = $rate['Rate']['latefee_applies'];
