@@ -73,11 +73,12 @@
                         'ft_lodging' => 'Full time with lodging (fill out lodging below)',
                         'ft_nolodging' => 'Full time, no lodging',
                         'sat_only' => 'Saturday only (3 meetings, 2 meals, booklet, water bottle)',
-                        'pt' => 'Other:'
+                        //'pt' => 'Other:'
                     ),
                     array('legend' => false,'style' => "margin: 4px 15px 0px 0px"));?>
                 </td>
             </tr>
+            <?php /**
             <tr>
                 <td></td>
                 <td width=50></td>
@@ -106,6 +107,7 @@
                     <?php echo $this->Form->input('pt_misc',array('type' => 'select','label' => false,'multiple' => 'checkbox','options' => array('booklet' => 'Outline booklet','water' => 'Water bottle'),'style' => "margin: 3px 10px 0px 0px; display: inline"));?>
                 </td>
             </tr>
+            **/?>
             <tr>
                 <td></td>
                 <td></td>
